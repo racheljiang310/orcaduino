@@ -1,3 +1,4 @@
+#include "instr.h"
 #include "display.h"
 #include <Arduino.h>
 
@@ -6,13 +7,15 @@ bool auto_mode = true; // start in auto mode
 uint64_t last_step = 0; // previous step
 const uint64_t step_delay = 500; // tweak as needed
 
-// 2D grid
+// 2D grid with characters
 char grid_screen[SCREEN_HEIGHT * SCREEN_WIDTH];
-int grid_color[SCREEN_HEIGHT * SCREEN_WIDTH];
-// 0: nothing | 1: operation | 2: operands | 3: comments
+
+// 2D grid with colors: 0: nothing | 1: operation | 2: operands | 3: result | 4: comments
+uint8_t grid_color[SCREEN_HEIGHT * SCREEN_WIDTH];
 
 // PC
 int x, y;
+// somewhat of a "register"
 int memory;
 
 // put function declarations here:
@@ -35,17 +38,26 @@ void loop() {
   
   if (Serial.available()) {
     char c = Serial.read();
+    char left = grid_screen[x*SCREEN_WIDTH+y-1];
+    char right = grid_screen[x*SCREEN_WIDTH+y+1];
+    char up = grid_screen[(x-1)*SCREEN_WIDTH+y];
+    char down = grid_screen[(x+1)*SCREEN_WIDTH+y];
+    
     switch (c){
       case ADD:
-        memory = grid_screen[x*SCREEN_WIDTH+y-1] + grid_screen[x*SCREEN_WIDTH+y+1];
-        grid_screen[x*SCREEN_WIDTH+y] = ADD;
-        grid_screen[((x+1)*SCREEN_WIDTH)+y] = memory;
+        add(left, right);
         break;
       case SUB:
-        memory = grid_screen[x*SCREEN_WIDTH+y-1] - grid_screen[x*SCREEN_WIDTH+y+1];
-        grid_screen[x*SCREEN_WIDTH+y] = SUB;
-        grid_screen[((x+1)*SCREEN_WIDTH)+y] = memory;
+        sub(left, right);
         break;
+      case CLOCK:
+        clock(left, right); // ops not needed for this foo
+        break;
+      case DELAY:
+        delay_b(left, right); // ops not needed for this foo
+        break;
+      case RIGHT:
+        east();
       default:
         // if it's a number, then store it
         if(c >= '0' && c <= '9'){
