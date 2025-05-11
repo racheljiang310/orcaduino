@@ -36,7 +36,7 @@
 #define HALT       'H' // HALT whatever @ (x, y + 1)
 #define INC        'I' // increment @ (x, y + 1)
 
-#define DEREF      'K' // read multiple variables
+#define KONCAT     'K' // read multiple variables
 #define MIN        'L' // OUT min(inputs[])
 #define MULT       'M' // OUT in[1] x in[2]
 #define UP         'N' // NORTH

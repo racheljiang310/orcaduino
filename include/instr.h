@@ -11,28 +11,28 @@
 
 /***** All things BASIC defined here *********************************/
 void bang();
-void halt();
+void halt(); // DONE
 void east(); // DONE
-void north();
+void north(); // DONE
 void south();
 void west();
 void comment();
 
-void konkat(char len);
+void konkat(char len); // DONE
 void jumper(char val);
-void jymper(char val);
+void jymper(char val); // DONE
 
 void add(char a, char b); // DONE
 void sub(char a, char b); // DONE
-void multiply(char a, char b);
+void multiply(char a, char b); // DONE
 
-void lesser(char a, char b);
+void lesser(char a, char b); // DONE
 void branch_if(char a, char b); // DONE
 
 void clock(char rate=0, char mod=8); // DONE
 void delay_b(char rate, char mod); // DONE
 
-void random(char min, char max);
+void rando(char min, char max); // DONE
 void uclid(char step, char max);
 void lerp(char rate, char target);
 
@@ -40,10 +40,10 @@ void increment(char step, char mod);
 char variable(char write, char read);
 
 void track(char key, char len, char val);
-void push(char len, char key, char val);
+void push(char key, char len, char val); // DONE
 
-void read(char x, char y, char read);
-void query(char x, char y, char len);
+void read(char row, char col); // DONE
+void query(char row, char col, char len); // DONE
 void write(char x, char y, char val);
 void generator(char x_v, char y_v, char len); // DONE
 
