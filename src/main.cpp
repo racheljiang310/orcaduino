@@ -133,6 +133,33 @@ void loop() {
       case RAND:
         rando(left, right);
         break;
+      case DOWN:
+        south();
+        break;
+      case TRACK:
+        track(super_left, left, right);
+        break;
+      case VAR:
+        variable(left, right);
+        break;
+      case LEFT:
+        west();
+        break;
+      case WRITE:
+        write(super_left, left, right);
+        break;
+      case JXMP:
+        jxmper(left);
+        break;
+      case LERP:
+        lerp(left, right); // ops not needed for this foo
+        break;
+      case BANG:
+        bang();
+        break;
+      case COMMENT:
+        comment();
+        break;
       default:
         // if it's a numerically represented value
         if((c >= '0' && c <= '9' )|| (c >= 'a' && c <= 'z')){
@@ -143,7 +170,7 @@ void loop() {
   }
 
   // if (auto_mode && ((millis() - last_step) > step_delay)) {
-  //   // executeCurrentCommand();
+  //   // update_frame();
   //   last_step = millis();
   // }
 

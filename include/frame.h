@@ -7,3 +7,5 @@
  * frame-by-frame animation.
 **********************************************************************/
 #endif
+
+void update_frame();

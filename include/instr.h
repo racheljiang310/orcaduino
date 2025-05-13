@@ -11,43 +11,43 @@
 
 /***** All things BASIC defined here *********************************/
 void bang();
-void halt(); // DONE
-void east(); // DONE
-void north(); // DONE
+void halt();
+void east();
+void north();
 void south();
 void west();
-void comment();
+void comment(); // worry about this later
 
-void konkat(char len); // DONE
-void jumper(char val);
-void jymper(char val); // DONE
+void konkat(char len);
+void jxmper(char val);
+void jymper(char val);
 
-void add(char a, char b); // DONE
-void sub(char a, char b); // DONE
-void multiply(char a, char b); // DONE
+void add(char a, char b);
+void sub(char a, char b);
+void multiply(char a, char b); 
 
-void lesser(char a, char b); // DONE
-void branch_if(char a, char b); // DONE
+void lesser(char a, char b); 
+void branch_if(char a, char b); 
 
-void clock(char rate=0, char mod=8); // DONE
-void delay_b(char rate, char mod); // DONE
+void clock(char rate=0, char mod=8); 
+void delay_b(char rate, char mod); 
 
-void rando(char min, char max); // DONE
-void uclid(char step, char max);
-void lerp(char rate, char target);
+void rando(char min, char max); 
+void uclid(char step, char max); // we'll handle this later...
+void lerp(char rate, char target); 
 
 void increment(char step, char mod);
-char variable(char write, char read);
+void variable(char name, char value); 
 
-void track(char key, char len, char val);
-void push(char key, char len, char val); // DONE
+void track(char idx, char len, char val); 
+void push(char key, char len, char val); 
 
-void read(char row, char col); // DONE
-void query(char row, char col, char len); // DONE
-void write(char x, char y, char val);
-void generator(char x_v, char y_v, char len); // DONE
+void read(char row, char col); 
+void query(char row, char col, char len); 
+void write(char off_x, char off_y, char val); 
+void generator(char x_v, char y_v, char len); 
 
-/***** All things SPECIAL defined here ************************(******/
+/***** All things SPECIAL defined here *******************************/
 
 void self(char cmd);
 void midi(char ch, char oct, char note, char velocity);

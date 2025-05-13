@@ -15,8 +15,12 @@ extern int x, y;
 extern int memory;
 
 /***** All things BASIC defined here *********************************/
-void bang(){
 
+/// @brief bangs
+/// @details reset once it bangs once
+void bang(){
+    grid_screen[x*SCREEN_WIDTH+y] = BANG;
+    grid_color[x*SCREEN_WIDTH+y] = 1;
 }
 
 /// @brief Halts the operation @ (x, y+1) if it exists
@@ -40,12 +44,21 @@ void north(){
     grid_screen[x*SCREEN_WIDTH+y] = UP;
     grid_color[x*SCREEN_WIDTH+y] = 2;
 }
+/// @brief moves an 'S' downwards until it goes off screen
+/// @details frame updates @ grid[(x*SCREEN_WIDTH)+y] => mv up/frame
 void south(){
+    grid_screen[x*SCREEN_WIDTH+y] = DOWN;
+    grid_color[x*SCREEN_WIDTH+y] = 2;
 
 }
+/// @brief moves an 'W' leftwards until it goes off screen
+/// @details frame updates @ grid[(x*SCREEN_WIDTH)+y] => mv up/frame
 void west(){
-
+    grid_screen[x*SCREEN_WIDTH+y] = LEFT;
+    grid_color[x*SCREEN_WIDTH+y] = 2;
 }
+
+/// @brief comments, we can handle this later
 void comment(){
 
 }
@@ -66,8 +79,17 @@ void konkat(char len){
     }
 }
 
-void jumper(char val){
-
+/// @brief teleports a value left to right
+/// @param val the value in question
+void jxmper(char val){
+    // update screen with operator
+    grid_screen[x*SCREEN_WIDTH+y] = JXMP;
+    // update screen with result
+    grid_screen[(x*SCREEN_WIDTH)+y+1] = val;
+    // update screen with colors
+    grid_color[x*SCREEN_WIDTH+y] = 1; // operator
+    grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
+    grid_color[(x*SCREEN_WIDTH)+y+1] = 3; // result
 }
 
 /// @brief Takes value from north and teleports it to south
@@ -207,8 +229,21 @@ void rando(char min, char max){
 void uclid(char step, char max){
 
 }
-void lerp(char rate, char target){
 
+/// @brief increments until it reaches 'target', wraps around too
+/// @details frame updates @ grid[((x+1)*SCREEN_WIDTH)+y] until it reaches target
+/// @param rate the rate at which we increment
+/// @param target the target value we want to obtain
+void lerp(char rate, char target){
+    // update screen with operator
+    grid_screen[x*SCREEN_WIDTH+y] = LERP;
+    grid_color[x*SCREEN_WIDTH+y] = 1; // operator
+
+    grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
+
+    // update screen with result, starts @ min
+    grid_screen[((x+1)*SCREEN_WIDTH)+y] = '0'; // TODO: ensure that this works with letters too
+    grid_color[((x+1)*SCREEN_WIDTH)+y] = 3; // result  
 }
 
 /// @brief Increments by 'step' from [0, mod)
@@ -225,12 +260,38 @@ void increment(char step, char mod){
     grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
     grid_color[((x+1)*SCREEN_WIDTH)+y] = 3; // result
 }
-char variable(char write, char read){
+
+/// @brief creates a variable
+/// @param name 
+/// @param value 
+void variable(char name, char value){
+    // update screen with operator
+    grid_screen[x*SCREEN_WIDTH+y] = VAR;
+    grid_color[x*SCREEN_WIDTH+y] = 1; // operator
+    grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
+
+    variables[name] = static_cast<int>(value); // save variables
 
 }
 
-void track(char key, char len, char val){
+/// @brief ouputs note @ 'idx' from arbitrarily long 'val' of size 'len'
+/// @details frame updates @ grid[((x+1)*SCREEN_WIDTH)+y]
+/// @param idx the index % len value
+/// @param len size of val
+/// @param val val in questions
+void track(char idx, char len, char val){
+    grid_screen[x*SCREEN_WIDTH+y] = TRACK;
+    grid_color[x*SCREEN_WIDTH+y] = 1; 
 
+    // update screen with result & colors
+    uint8_t id = static_cast<int>(idx) % static_cast<int>(len);
+    grid_color[(x*SCREEN_WIDTH)+y-1] = 2; 
+    grid_color[(x*SCREEN_WIDTH)+y-2] = 2; 
+    grid_color[(x*SCREEN_WIDTH)+y+1] = 2; 
+    // result
+    memory = grid_screen[(x*SCREEN_WIDTH)+y+1+id];
+    grid_screen[(x*SCREEN_WIDTH)+y] = memory;
+    grid_color[(x*SCREEN_WIDTH)+y] = 3; 
 }
 /// @brief writes eastward operand
 /// @details frame updates @ id + 1 % len
@@ -298,8 +359,22 @@ void query(char row, char col, char len){
         start_c++;
     }
 }
-void write(char x, char y, char val){
+void write(char off_x, char off_y, char val){
+    // update screen with operator
+    grid_screen[x*SCREEN_WIDTH+y] = WRITE;
+    grid_color[x*SCREEN_WIDTH+y] = 1; 
+    grid_color[x*SCREEN_WIDTH+y-2] = grid_color[x*SCREEN_WIDTH+y-1] = grid_color[x*SCREEN_WIDTH+y+1] = 2; 
 
+    // update screen with result & colors
+    uint8_t x_off = static_cast<int>(off_x);
+    uint8_t y_off = static_cast<int>(off_y); // one after operator
+
+    // value to write
+    memory = static_cast<int>(val);
+
+    // put value into offsetted box
+    grid_screen[(x+1+y_off)*SCREEN_WIDTH+y+x_off] = memory;
+    grid_color[(x+1+y_off)*SCREEN_WIDTH+y+x_off] = 3;
 }
 
 /// @brief [x|y|len|G|string of "len" size]
