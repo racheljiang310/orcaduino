@@ -7,7 +7,6 @@
  * aka our instruction set. More descriptions will be provided in the
  * function definitions.
 **********************************************************************/
-#include "config.h"
 
 /***** All things BASIC defined here *********************************/
 void bang();

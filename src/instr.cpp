@@ -1,4 +1,5 @@
 #include "instr.h"
+#include "config.h"
 #include "Arduino.h"
 #include "stdint.h"
 /**********************************************************************
@@ -63,8 +64,8 @@ void comment(){
 
 }
 
-/// @brief [len] K [variables...]
-/// @param len length of concatenation
+/// @brief [len] K [variables...] => values to vars
+/// @param len length of variables to read
 void konkat(char len){
     // update screen with operator
     grid_screen[x*SCREEN_WIDTH+y] = JYMP;
@@ -72,10 +73,11 @@ void konkat(char len){
     grid_color[x*SCREEN_WIDTH+y] = 1; // operator
     grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
 
-    for(uint8_t i = 0; i < static_cast<int>(len); i++){
+    for(uint8_t i = 0; i < DIGIFY(len); i++){
         grid_color[(x*SCREEN_WIDTH)+y+1+i] = 2; // operand
         grid_color[((x+1)*SCREEN_WIDTH)+y+1+i] = 3; // result
-        grid_screen[((x+1)*SCREEN_WIDTH)+y+1+i] = static_cast<char>(variables[static_cast<int>(grid_screen[((x)*SCREEN_WIDTH)+y+1+i])]); // values
+        uint8_t var = DIGIFY(grid_screen[((x)*SCREEN_WIDTH)+y+1+i]);
+        grid_screen[((x+1)*SCREEN_WIDTH)+y+1+i] = UNDIGIFY(variables[var]); // values
     }
 }
 
@@ -110,11 +112,11 @@ void jymper(char val){
 /// @param b a number
 void add(char a, char b){
     // calculation
-    memory = static_cast<int>(a)+static_cast<int>(b);
+    memory = DIGIFY(a)+DIGIFY(b);
     // update screen with operator
     grid_screen[x*SCREEN_WIDTH+y] = ADD;
     // update screen with result
-    grid_screen[((x+1)*SCREEN_WIDTH)+y] = static_cast<char>(memory);
+    grid_screen[((x+1)*SCREEN_WIDTH)+y] = UNDIGIFY(memory);
     // update screen with colors
     grid_color[x*SCREEN_WIDTH+y] = 1; // operator
     grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
@@ -126,11 +128,11 @@ void add(char a, char b){
 /// @param b a number
 void sub(char a, char b){
     // calculation
-    memory = static_cast<int>(a)-static_cast<int>(b);
+    memory = DIGIFY(a)-DIGIFY(b);
     // update screen with operator
     grid_screen[x*SCREEN_WIDTH+y] = SUB;
     // update screen with result
-    grid_screen[((x+1)*SCREEN_WIDTH)+y] = static_cast<char>(memory);
+    grid_screen[((x+1)*SCREEN_WIDTH)+y] = UNDIGIFY(memory);
     // update screen with colors
     grid_color[x*SCREEN_WIDTH+y] = 1; // operator
     grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
@@ -141,7 +143,7 @@ void sub(char a, char b){
 /// @param a left value in question
 /// @param b right value in question
 void multiply(char a, char b){
-    memory = (static_cast<int>(a) * static_cast<int>(b)) % 36;
+    memory = (DIGIFY(a) * DIGIFY(b)) % 36;
     // update screen with operator
     grid_screen[x*SCREEN_WIDTH+y] = MULT;
     // update screen with result
@@ -156,7 +158,7 @@ void multiply(char a, char b){
 /// @param a left val
 /// @param b right val
 void lesser(char a, char b){
-    memory = static_cast<int>(a) < static_cast<int>(b) ? a : b;
+    memory = DIGIFY(a) < DIGIFY(b) ? a : b;
     // update screen with operator
     grid_screen[x*SCREEN_WIDTH+y] = MIN;
     // update screen with result
@@ -190,7 +192,7 @@ void clock(char rate=0, char mod=8){
     // update screen with operator
     grid_screen[x*SCREEN_WIDTH+y] = CLOCK;
     // update screen with result
-    grid_screen[((x+1)*SCREEN_WIDTH)+y] = static_cast<int>(0);
+    grid_screen[((x+1)*SCREEN_WIDTH)+y] = DIGIFY(0);
     // update screen with colors
     grid_color[x*SCREEN_WIDTH+y] = 1; // operator
     grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
@@ -223,7 +225,7 @@ void rando(char min, char max){
     grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
 
     // update screen with result, starts @ min
-    grid_screen[((x+1)*SCREEN_WIDTH)+y] = random(static_cast<int>(min), static_cast<int>(max)); // TODO: ensure that this works with letters too
+    grid_screen[((x+1)*SCREEN_WIDTH)+y] = random(DIGIFY(min), DIGIFY(max)); // TODO: ensure that this works with letters too
     grid_color[((x+1)*SCREEN_WIDTH)+y] = 3; // result  
 }
 void uclid(char step, char max){
@@ -270,8 +272,14 @@ void variable(char name, char value){
     grid_color[x*SCREEN_WIDTH+y] = 1; // operator
     grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
 
-    variables[name] = static_cast<int>(value); // save variables
-
+    // if we're declaring or reading a variable
+    if(variables[value] != 100){
+        grid_screen[(x+1)*SCREEN_WIDTH+y] = variables[value]; // read variable
+        grid_color[(x+1)*SCREEN_WIDTH+y] = 3; // read variable
+    }
+    else{
+        variables[name] = DIGIFY(value); // save variables
+    }
 }
 
 /// @brief ouputs note @ 'idx' from arbitrarily long 'val' of size 'len'
@@ -284,7 +292,7 @@ void track(char idx, char len, char val){
     grid_color[x*SCREEN_WIDTH+y] = 1; 
 
     // update screen with result & colors
-    uint8_t id = static_cast<int>(idx) % static_cast<int>(len);
+    uint8_t id = DIGIFY(idx) % DIGIFY(len);
     grid_color[(x*SCREEN_WIDTH)+y-1] = 2; 
     grid_color[(x*SCREEN_WIDTH)+y-2] = 2; 
     grid_color[(x*SCREEN_WIDTH)+y+1] = 2; 
@@ -303,7 +311,7 @@ void push(char key, char len, char val){
     grid_color[x*SCREEN_WIDTH+y] = 1; 
 
     // update screen with result & colors
-    uint8_t id = static_cast<int>(key) % static_cast<int>(len);
+    uint8_t id = DIGIFY(key) % DIGIFY(len);
     grid_color[(x*SCREEN_WIDTH)+y-1] = 2; 
     grid_color[(x*SCREEN_WIDTH)+y-2] = 2; 
     grid_color[(x*SCREEN_WIDTH)+y+1] = 2; 
@@ -317,12 +325,12 @@ void read(char row, char col){
     grid_screen[x*SCREEN_WIDTH+y] = READ;
     grid_color[x*SCREEN_WIDTH+y] = 1; 
     // update screen with result & colors
-    uint8_t x_off = static_cast<int>(row);
-    uint8_t y_off = static_cast<int>(col)+1; // one after operator
+    uint8_t x_off = DIGIFY(row);
+    uint8_t y_off = DIGIFY(col)+1; // one after operator
     grid_color[x*SCREEN_WIDTH+y-2] = grid_color[x*SCREEN_WIDTH+y-1] = 2; 
 
     // read the offsetted value
-    memory = static_cast<int>(grid_screen[(x+x_off)*SCREEN_WIDTH+y+y_off]);
+    memory = DIGIFY(grid_screen[(x+x_off)*SCREEN_WIDTH+y+y_off]);
     grid_color[(x+x_off)*SCREEN_WIDTH+y+y_off] = 2;
 
     // put read value into south box
@@ -339,18 +347,18 @@ void query(char row, char col, char len){
     grid_color[x*SCREEN_WIDTH+y] = 1;
 
     // update screen with result & colors
-    uint8_t x_off = static_cast<int>(row);
-    uint8_t y_off = static_cast<int>(col+1); // one after operator
+    uint8_t x_off = DIGIFY(row);
+    uint8_t y_off = DIGIFY(col+1); // one after operator
 
-    uint8_t size = static_cast<int>(len); // one after operator
-    uint8_t start_r = static_cast<int>(x+1);
-    uint8_t start_c = static_cast<int>(y-size); // one after operator
+    uint8_t size = DIGIFY(len); // one after operator
+    uint8_t start_r = DIGIFY(x+1);
+    uint8_t start_c = DIGIFY(y-size); // one after operator
 
     grid_color[x*SCREEN_WIDTH+y-3] = grid_color[x*SCREEN_WIDTH+y-2] = grid_color[x*SCREEN_WIDTH+y-1] = 2; 
 
     for(uint8_t i = 0; i < size; i){
         // read the byte
-        memory = static_cast<int>(grid_screen[(x+x_off)*SCREEN_WIDTH+y+y_off]);
+        memory = DIGIFY(grid_screen[(x+x_off)*SCREEN_WIDTH+y+y_off]);
         grid_color[(x+x_off)*SCREEN_WIDTH+y+y_off] = 2;
 
         // write the byte into result
@@ -366,11 +374,11 @@ void write(char off_x, char off_y, char val){
     grid_color[x*SCREEN_WIDTH+y-2] = grid_color[x*SCREEN_WIDTH+y-1] = grid_color[x*SCREEN_WIDTH+y+1] = 2; 
 
     // update screen with result & colors
-    uint8_t x_off = static_cast<int>(off_x);
-    uint8_t y_off = static_cast<int>(off_y); // one after operator
+    uint8_t x_off = DIGIFY(off_x);
+    uint8_t y_off = DIGIFY(off_y); // one after operator
 
     // value to write
-    memory = static_cast<int>(val);
+    memory = DIGIFY(val);
 
     // put value into offsetted box
     grid_screen[(x+1+y_off)*SCREEN_WIDTH+y+x_off] = memory;
@@ -386,9 +394,9 @@ void generator(char x_v, char y_v, char len){
     grid_screen[x*SCREEN_WIDTH+y] = GENER;
     grid_color[x*SCREEN_WIDTH+y] = 1; 
     // update screen with result & colors
-    memory = static_cast<int>(len);
-    uint8_t xv = static_cast<int>(x_v);
-    uint8_t yv = static_cast<int>(y_v);
+    memory = DIGIFY(len);
+    uint8_t xv = DIGIFY(x_v);
+    uint8_t yv = DIGIFY(y_v);
     for(uint8_t i = 0; i < memory; i++){
         grid_screen[((x+yv)*SCREEN_WIDTH)+(xv)+i] = grid_screen[x*SCREEN_WIDTH+y+i+1]; 
         grid_color[x*SCREEN_WIDTH+y+i+1] = 2;
