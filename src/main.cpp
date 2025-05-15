@@ -8,7 +8,7 @@
 #include <SPI.h>
 
 // control
-bool auto_mode = true; // start in auto mode
+uint8_t cycle = 0; // 8 average
 uint64_t last_step = 0; // previous step
 const uint64_t step_delay = 500; // tweak as needed
 
@@ -162,11 +162,11 @@ void loop() {
     }
   }
 
-  if (auto_mode && ((millis() - last_step) > step_delay)) {
+  if ((millis() - last_step) > step_delay) {
     update_frame();
     last_step = millis();
   }
-
+  cycle = (cycle + 1) % 8;
   delay(100);
 }
 

@@ -8,4 +8,5 @@
 **********************************************************************/
 #endif
 
+char increment_b36(char original);
 void update_frame();

@@ -32,7 +32,7 @@ void clock(char rate=0, char mod=8);
 void delay_b(char rate, char mod); 
 
 void rando(char min, char max); 
-void uclid(char step, char max); // we'll handle this later...
+// void uclid(char step, char max); => we'll handle this later...
 void lerp(char rate, char target); 
 
 void increment(char step, char mod);

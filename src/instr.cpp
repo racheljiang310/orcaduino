@@ -17,47 +17,117 @@ extern int memory;
 
 /***** All things BASIC defined here *********************************/
 
+/***** Dynamic *******************************************************/
+
 /// @brief bangs
-/// @details reset once it bangs once
 void bang(){
     grid_screen[x*SCREEN_WIDTH+y] = BANG;
     grid_color[x*SCREEN_WIDTH+y] = 1;
 }
 
 /// @brief Halts the operation @ (x, y+1) if it exists
-/// @details for each frame update, check if grid_screen[x, y-1] == HALT
+/// TODO: for each frame update, check if grid_screen[x, y-1] == HALT
 void halt(){
     grid_screen[x*SCREEN_WIDTH+y] = HALT;
     grid_color[x*SCREEN_WIDTH+y] = 2;
 }
 
 /// @brief moves an 'E' to the right until it goes off screen
-/// @details frame updates @ grid[(x*SCREEN_WIDTH)+y] => mv right/frame
 void east(){
     // update screen with operator
     grid_screen[x*SCREEN_WIDTH+y] = RIGHT;
     grid_color[x*SCREEN_WIDTH+y] = 2;
 }
 /// @brief moves an 'E' to the right until it goes off screen
-/// @details frame updates @ grid[(x*SCREEN_WIDTH)+y] => mv up/frame
 void north(){
     // update screen with operator
     grid_screen[x*SCREEN_WIDTH+y] = UP;
     grid_color[x*SCREEN_WIDTH+y] = 2;
 }
 /// @brief moves an 'S' downwards until it goes off screen
-/// @details frame updates @ grid[(x*SCREEN_WIDTH)+y] => mv up/frame
 void south(){
     grid_screen[x*SCREEN_WIDTH+y] = DOWN;
     grid_color[x*SCREEN_WIDTH+y] = 2;
 
 }
 /// @brief moves an 'W' leftwards until it goes off screen
-/// @details frame updates @ grid[(x*SCREEN_WIDTH)+y] => mv up/frame
 void west(){
     grid_screen[x*SCREEN_WIDTH+y] = LEFT;
     grid_color[x*SCREEN_WIDTH+y] = 2;
 }
+
+/// @brief creates a counter of some sense
+/// @param rate initial delay of rate frames
+/// @param mod counts -> [0,mod)
+void clock(char rate=0, char mod=8){
+    // update screen with operator
+    grid_screen[x*SCREEN_WIDTH+y] = CLOCK;
+    // update screen with result
+    grid_screen[((x+1)*SCREEN_WIDTH)+y] = DIGIFY(0);
+    // update screen with colors
+    grid_color[x*SCREEN_WIDTH+y] = 1; // operator
+    grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
+    grid_color[((x+1)*SCREEN_WIDTH)+y] = 3; // result
+}
+/// @brief creates a delay in a "bang"
+/// @param rate initial delay of rate frames
+/// @param mod bangs once every "mod" frames
+void delay_b(char rate=0, char mod=8){
+    // update screen with operator
+    grid_screen[x*SCREEN_WIDTH+y] = DELAY;
+    // update screen with result
+    grid_screen[((x+1)*SCREEN_WIDTH)+y] = '.'; // will go to '*' on bang
+    // update screen with colors
+    grid_color[x*SCREEN_WIDTH+y] = 1; // operator
+    grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
+    grid_color[((x+1)*SCREEN_WIDTH)+y] = 3; // result
+}
+
+/// @brief random number inclusive of min and max values
+/// @param min min value
+/// @param max max value
+void rando(char min, char max){
+    // update screen with operator
+    grid_screen[x*SCREEN_WIDTH+y] = RAND;
+    grid_color[x*SCREEN_WIDTH+y] = 1; // operator
+
+    grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
+
+    // update screen with result, starts @ min
+    grid_screen[((x+1)*SCREEN_WIDTH)+y] = random(DIGIFY(min), DIGIFY(max)); // TODO: ensure that this works with letters too
+    grid_color[((x+1)*SCREEN_WIDTH)+y] = 3; // result  
+}
+
+/// @brief increments until it reaches 'target', wraps around too
+/// @param rate the rate at which we increment
+/// @param target the target value we want to obtain
+void lerp(char rate, char target){
+    // update screen with operator
+    grid_screen[x*SCREEN_WIDTH+y] = LERP;
+    grid_color[x*SCREEN_WIDTH+y] = 1; // operator
+
+    grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
+
+    // update screen with result, starts @ min
+    grid_screen[((x+1)*SCREEN_WIDTH)+y] = '0'; // TODO: ensure that this works with letters too
+    grid_color[((x+1)*SCREEN_WIDTH)+y] = 3; // result  
+}
+
+/// @brief Increments by 'step' from [0, mod)
+/// @param step increment value
+/// @param mod upper bound (not inclusive)
+void increment(char step, char mod){
+    // update screen with operator
+    grid_screen[x*SCREEN_WIDTH+y] = INC;
+    // update screen with result, starts @ 1
+    grid_screen[((x+1)*SCREEN_WIDTH)+y] = '0';
+    // update screen with colors
+    grid_color[x*SCREEN_WIDTH+y] = 1; // operator
+    grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
+    grid_color[((x+1)*SCREEN_WIDTH)+y] = 3; // result
+}
+
+/***** Static ********************************************************/
 
 /// @brief comments, we can handle this later
 void comment(){
@@ -184,85 +254,6 @@ void branch_if(char a, char b){
     grid_color[((x+1)*SCREEN_WIDTH)+y] = 3; // result
 }
 
-/// @brief creates a counter of some sense
-/// @details frame updates @ grid[((x+1)*SCREEN_WIDTH)+y]
-/// @param rate initial delay of rate frames
-/// @param mod counts -> [0,mod)
-void clock(char rate=0, char mod=8){
-    // update screen with operator
-    grid_screen[x*SCREEN_WIDTH+y] = CLOCK;
-    // update screen with result
-    grid_screen[((x+1)*SCREEN_WIDTH)+y] = DIGIFY(0);
-    // update screen with colors
-    grid_color[x*SCREEN_WIDTH+y] = 1; // operator
-    grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
-    grid_color[((x+1)*SCREEN_WIDTH)+y] = 3; // result
-}
-/// @brief creates a delay in a "bang"
-/// @details frame updates @ grid[((x+1)*SCREEN_WIDTH)+y]
-/// @param rate initial delay of rate frames
-/// @param mod bangs once every "mod" frames
-void delay_b(char rate=0, char mod=8){
-    // update screen with operator
-    grid_screen[x*SCREEN_WIDTH+y] = DELAY;
-    // update screen with result
-    grid_screen[((x+1)*SCREEN_WIDTH)+y] = '.'; // will go to '*' on bang
-    // update screen with colors
-    grid_color[x*SCREEN_WIDTH+y] = 1; // operator
-    grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
-    grid_color[((x+1)*SCREEN_WIDTH)+y] = 3; // result
-}
-
-/// @brief random number inclusive of min and max values
-/// @details frame updates @ grid[((x+1)*SCREEN_WIDTH)+y]
-/// @param min min value
-/// @param max max value
-void rando(char min, char max){
-    // update screen with operator
-    grid_screen[x*SCREEN_WIDTH+y] = RAND;
-    grid_color[x*SCREEN_WIDTH+y] = 1; // operator
-
-    grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
-
-    // update screen with result, starts @ min
-    grid_screen[((x+1)*SCREEN_WIDTH)+y] = random(DIGIFY(min), DIGIFY(max)); // TODO: ensure that this works with letters too
-    grid_color[((x+1)*SCREEN_WIDTH)+y] = 3; // result  
-}
-void uclid(char step, char max){
-
-}
-
-/// @brief increments until it reaches 'target', wraps around too
-/// @details frame updates @ grid[((x+1)*SCREEN_WIDTH)+y] until it reaches target
-/// @param rate the rate at which we increment
-/// @param target the target value we want to obtain
-void lerp(char rate, char target){
-    // update screen with operator
-    grid_screen[x*SCREEN_WIDTH+y] = LERP;
-    grid_color[x*SCREEN_WIDTH+y] = 1; // operator
-
-    grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
-
-    // update screen with result, starts @ min
-    grid_screen[((x+1)*SCREEN_WIDTH)+y] = '0'; // TODO: ensure that this works with letters too
-    grid_color[((x+1)*SCREEN_WIDTH)+y] = 3; // result  
-}
-
-/// @brief Increments by 'step' from [0, mod)
-/// @details frame updates @ grid[((x+1)*SCREEN_WIDTH)+y]
-/// @param step increment value
-/// @param mod upper bound (not inclusive)
-void increment(char step, char mod){
-    // update screen with operator
-    grid_screen[x*SCREEN_WIDTH+y] = INC;
-    // update screen with result, starts @ 1
-    grid_screen[((x+1)*SCREEN_WIDTH)+y] = '0';
-    // update screen with colors
-    grid_color[x*SCREEN_WIDTH+y] = 1; // operator
-    grid_color[x*SCREEN_WIDTH+y+1] = grid_color[x*SCREEN_WIDTH+y-1] = 2; // operand
-    grid_color[((x+1)*SCREEN_WIDTH)+y] = 3; // result
-}
-
 /// @brief creates a variable
 /// @param name 
 /// @param value 
@@ -283,7 +274,6 @@ void variable(char name, char value){
 }
 
 /// @brief ouputs note @ 'idx' from arbitrarily long 'val' of size 'len'
-/// @details frame updates @ grid[((x+1)*SCREEN_WIDTH)+y]
 /// @param idx the index % len value
 /// @param len size of val
 /// @param val val in questions
@@ -302,7 +292,6 @@ void track(char idx, char len, char val){
     grid_color[(x*SCREEN_WIDTH)+y] = 3; 
 }
 /// @brief writes eastward operand
-/// @details frame updates @ id + 1 % len
 /// @param key index
 /// @param len # slots
 /// @param val what to write
@@ -320,6 +309,9 @@ void push(char key, char len, char val){
     grid_color[((x+1)*SCREEN_WIDTH)+y+id] = 3; 
 }
 
+/// @brief read cell given offset
+/// @param row 
+/// @param col 
 void read(char row, char col){
     // update screen with operator
     grid_screen[x*SCREEN_WIDTH+y] = READ;
