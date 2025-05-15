@@ -7,7 +7,7 @@
  * aka our instruction set. More descriptions will be provided in the
  * function definitions.
 **********************************************************************/
-
+#include "stdint.h"
 /***** All things BASIC defined here *********************************/
 void bang();
 void halt();
@@ -17,34 +17,33 @@ void south();
 void west();
 void comment(); // worry about this later
 
-void konkat(char len);
-void jxmper(char val);
-void jymper(char val);
+void konkat(uint8_t len);
+void jxmper(uint8_t val);
+void jymper(uint8_t val);
 
-void add(char a, char b);
-void sub(char a, char b);
-void multiply(char a, char b); 
+void add(uint8_t a, uint8_t b);
+void sub(uint8_t a, uint8_t b);
+void multiply(uint8_t a, uint8_t b); 
 
-void lesser(char a, char b); 
-void branch_if(char a, char b); 
+void lesser(uint8_t a, uint8_t b); 
+void branch_if(uint8_t a, uint8_t b); 
 
-void clock(char rate=0, char mod=8); 
-void delay_b(char rate, char mod); 
+void clock(); 
+void delay_b(); 
 
-void rando(char min, char max); 
+void rando(uint8_t minx, uint8_t maxx); 
 // void uclid(char step, char max); => we'll handle this later...
-void lerp(char rate, char target); 
+void lerp(); 
 
-void increment(char step, char mod);
-void variable(char name, char value); 
+void increment();
+void variable(uint8_t name, uint8_t value); 
+void track(uint8_t idx, uint8_t len, uint8_t val); 
+void push(uint8_t key, uint8_t len, uint8_t val); 
 
-void track(char idx, char len, char val); 
-void push(char key, char len, char val); 
-
-void read(char row, char col); 
-void query(char row, char col, char len); 
-void write(char off_x, char off_y, char val); 
-void generator(char x_v, char y_v, char len); 
+void read(uint8_t row, uint8_t col); 
+void query(uint8_t row, uint8_t col, uint8_t len); 
+void write(uint8_t off_x, uint8_t off_y, uint8_t val); 
+void generator(uint8_t x_v, uint8_t y_v, uint8_t len); 
 
 /***** All things SPECIAL defined here *******************************/
 

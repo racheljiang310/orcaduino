@@ -6,9 +6,9 @@
  
 extern int memory;
 extern uint8_t cycle;
-extern char grid_screen[SCREEN_HEIGHT * SCREEN_WIDTH];
-extern uint8_t grid_color[SCREEN_HEIGHT * SCREEN_WIDTH];
-extern char op(int x_pos = 0, int y_pos = 0);
+extern char grid_screen[Y_MAX * X_MAX];
+extern uint8_t grid_color[Y_MAX * X_MAX];
+extern uint8_t get_index(int x_pos, int y_pos);
 
 // extern void comment();
 // extern void konkat(char len);
@@ -39,9 +39,9 @@ char increment_b36(char original){
 }
 
 void update_frame(){
-    uint8_t boost = SCREEN_WIDTH;
-    for(uint8_t row = 0; row < SCREEN_WIDTH; row++){
-        for(uint8_t col = 0; col < SCREEN_HEIGHT; col++){
+    uint8_t boost = X_MAX;
+    for(uint8_t row = 0; row < X_MAX; row++){
+        for(uint8_t col = 0; col < Y_MAX; col++){
             if(ISOP(grid_screen[row*boost + col]) && grid_screen[(row-1)*boost + col] != HALT){
                 switch(grid_screen[row*boost + col]){
                     case BANG:

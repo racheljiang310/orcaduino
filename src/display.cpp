@@ -9,14 +9,16 @@
 extern int x; 
 extern int y; 
 extern int memory;
-extern char grid_screen[SCREEN_HEIGHT * SCREEN_WIDTH];
-extern uint8_t grid_color[SCREEN_HEIGHT * SCREEN_WIDTH];
+extern int variables[36];
+extern char grid_screen[Y_MAX * X_MAX];
+extern uint8_t grid_color[Y_MAX * X_MAX];
 
 void init_grid(){
-    for(int row = 0; row < SCREEN_WIDTH; row++){
-        for(int col = 0; col < SCREEN_HEIGHT; col++){
-            grid_screen[row*SCREEN_WIDTH + col] = NOP;
-            grid_color[row*SCREEN_WIDTH + col] = NOP;
-        }
+    for(int i = 0; i < 64; i++){
+        grid_screen[i] = NOP;
+        grid_color[i] = 0;
+    }
+    for(int j = 0; j < 36; j++){
+        variables[j] = 100;
     }
 }

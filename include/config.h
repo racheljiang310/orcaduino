@@ -10,8 +10,14 @@
 **********************************************************************/
 
 /***** All things OLED defined here *********************************/
-#define SCREEN_WIDTH    8
-#define SCREEN_HEIGHT   8
+#define TFT_CS        10U
+#define TFT_RST       8U
+#define TFT_DC        9U
+#define TFT_WIDE      160U
+#define TFT_HIGH      128U
+
+#define X_MAX          8
+#define Y_MAX          8
 #define LCD_RESET     -1
 
 /***** Startup Defaults *********************************************/
