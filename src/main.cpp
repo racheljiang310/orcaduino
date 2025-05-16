@@ -12,14 +12,14 @@
 // control
 uint8_t cycle = 0; // 8 average
 uint64_t last_step = 0; // previous step
-const uint64_t step_delay = 500; // tweak as needed
+const uint64_t step_delay = 100; // tweak as needed
 
 int variables[36];
 
 // 2D grid with characters
 char grid_screen[Y_MAX * X_MAX];
 
-// 2D grid with colors: 0: nothing | 1: operation | 2: operands | 3: result | 4: comments
+// 2D grid with colors: 0: nothing | 1: operation | 2: operands | 3: result | 4: cursor | 5: comments
 uint8_t grid_color[Y_MAX * X_MAX];
 
 // PC
@@ -54,8 +54,23 @@ void loop() {
   if (Serial.available()) {
     char c = Serial.read();
     Serial.println(c);
-    x = 5; y = 4;
-    if (check_instruction(c)){
+    if(c == '['){
+      x = (x - 1 < 0) ? 0 : x-1;
+    }
+    else if(c == ']'){
+      x = (x + 1 == X_MAX) ? x : x+1;
+    }
+    else if(c == '='){
+      y = (y - 1 < 0) ? 0 : y-1;
+    }
+    else if(c == '\''){
+      y = (y + 1 == Y_MAX) ? y : y+1;
+    }
+    else if((c >= '0' && c <= '9' ) || (c >= 'a' && c <= 'z')){
+      grid_screen[y*X_MAX+x] = c;
+      grid_color[y*X_MAX+x] = 3;
+    }
+    else if (check_instruction(c) == 1){
       switch (c){
         case ADD:
           add(get_index(-1, 0), get_index(1,0));
@@ -142,9 +157,6 @@ void loop() {
           break;
       }
     }
-    else if((c >= '0' && c <= '9' )|| (c >= 'a' && c <= 'z')){
-      grid_screen[x*X_MAX+y] = c;
-    }
     else{
       Serial.println("Invalid instruction");
     }
@@ -163,8 +175,6 @@ void loop() {
 void draw_grid() {
   int16_t cellW = TFT_WIDE / X_MAX; // vertical groups spacing
   int16_t cellH = TFT_HIGH / Y_MAX; // horizontal groups spacing
-
-  tft.setTextSize(1);
   tft.setTextWrap(false);
 
   for (int i = 0; i < X_MAX; i++) {
@@ -173,11 +183,14 @@ void draw_grid() {
       char val = grid_screen[index];
       uint8_t color = grid_color[index];
 
-      if (color == 1){
+      if(x == i && y == j){
+        tft.setTextColor(ST77XX_BLACK, ST77XX_WHITE);
+      }
+      else if (color == 1){
         tft.setTextColor(ST77XX_CYAN, ST77XX_BLACK);
       }
       else if (color == 3){
-        tft.setTextColor(ST77XX_BLACK, ST77XX_CYAN);
+        tft.setTextColor(ST77XX_MAGENTA, ST77XX_BLACK);
       }
       else if (color == 2){
         tft.setTextColor(ST77XX_ORANGE, ST77XX_BLACK);
@@ -241,11 +254,6 @@ uint8_t get_index(int x_pos, int y_pos){
 /// @param instruction 
 /// @return instruction enum
 bool check_instruction(char instruction){
-
-  // don't cares: digits
-  if(!ISOP(instruction)){
-    return true;
-  }
   uint8_t a, b, c;
   // typically capital letters
   switch (instruction){
@@ -259,7 +267,7 @@ bool check_instruction(char instruction){
     case MULT:
     case RAND:
     case LERP:
-      return (y-1 >= 0) && (y + 1 < Y_MAX) && (x+1 < Y_MAX);
+      return (y + 1 < Y_MAX) && (x+1 < X_MAX) && (x-1 >= 0);
     case RIGHT:
     case UP:
     case DOWN:

@@ -41,7 +41,7 @@
 
 #define UNDIGIFY(c) (c + 48U >= '0' && c + 48U <= '9') ? (c + 48U) : (c+40U) // base36 => char
 #define DIGIFY(c) (c >= '0' && c <= '9') ? (NUM_DIGIFY(c)) : (CHAR_DIGIFY(c)) // char => base36
-#define ISOP(c) !(c >= 'A' && c <= 'Z')
+#define ISOP(c) (c >= 'A' && c <= 'Z')
 #define ISB36(c) (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') // if it belongs in base36
 
 // Arithmetic Operations
