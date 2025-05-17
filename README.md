@@ -1,5 +1,6 @@
 # ORCAduino (TinyOrca)
 | ORCA Esolang shoved in with an Arduino-Uno alonside an LCD display screen. Memory and space constrained, let's see if we can make this work in under 100,000 uploads to the microcontroller
+Credits: 100R & [Wiki Page](https://esolangs.org/wiki/Orca)
 
 ---
 # Week 1
