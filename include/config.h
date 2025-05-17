@@ -28,7 +28,6 @@
 #define NOP        '.' 
 
 /***** Display Settings ********************************************/
-#define BACKLIGHT_PIN 3
 #define TFT_CS     10
 #define TFT_DC     9
 #define TFT_RST    8
@@ -37,11 +36,11 @@
 
 // Helpful Conversion Macros
 #define NUM_DIGIFY(c) (c - 48U)  // don't use
-#define CHAR_DIGIFY(c) (c - 40U) // don't use
+#define CHAR_DIGIFY(c) (c - 87U) // don't use
 
-#define UNDIGIFY(c) (c + 48U >= '0' && c + 48U <= '9') ? (c + 48U) : (c+40U) // base36 => char
+#define UNDIGIFY(c) (c >= 0 && c <= 9) ? (c + 48U) : (c+87U) // base36 => char
 #define DIGIFY(c) (c >= '0' && c <= '9') ? (NUM_DIGIFY(c)) : (CHAR_DIGIFY(c)) // char => base36
-#define ISOP(c) (c >= 'A' && c <= 'Z')
+#define ISOP(c) ((c >= 'A' && c <= 'Z') || (c == '*') || (c == '#')) // indicates instruction
 #define ISB36(c) (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') // if it belongs in base36
 
 // Arithmetic Operations

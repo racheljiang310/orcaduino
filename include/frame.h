@@ -7,6 +7,5 @@
  * frame-by-frame animation.
 **********************************************************************/
 #endif
-
-char increment_b36(char original);
 void update_frame();
+void clear();
