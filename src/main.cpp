@@ -7,24 +7,22 @@
 #include <Adafruit_ST7735.h>
 #include <SPI.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 // control
 uint8_t cycle = 0; // 8 average
 uint64_t last_step = 0; // previous step
-const uint64_t step_delay = 100; // tweak as needed
+const uint64_t step_delay = 50; // tweak as needed
 
-int variables[36];
-
-// 2D grid with characters
-char grid_screen[Y_MAX * X_MAX];
+int variables[36];  // stores numerical values for variables
+bool bangers[Y_MAX * X_MAX];  // distinguishes between changes made in current vs previous cycle
 
 // 2D grid with colors: 0: nothing | 1: operation | 2: operands | 3: result | 4: cursor | 5: comments
 uint8_t grid_color[Y_MAX * X_MAX];
 
-// PC
 int x, y; // for col #, row #
-int memory;
+int memory; // honestly not sure why this is here
+char grid_screen[Y_MAX * X_MAX]; // 2D grid with characters
 
 // display
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
@@ -46,30 +44,23 @@ void setup() {
   y = Y_INIT; 
   init_grid(); // setup grid
   setup_display();
-
+  Serial.println("Setup Complete...");
 }
 
 void loop() {
   check_bounds(x, y); // check bounds
   if (Serial.available()) {
     char c = Serial.read();
+
+    #if DEBUG == 1 
     Serial.println(c);
-    if(c == '['){
-      x = (x - 1 < 0) ? 0 : x-1;
-    }
-    else if(c == ']'){
-      x = (x + 1 == X_MAX) ? x : x+1;
-    }
-    else if(c == '='){
-      y = (y - 1 < 0) ? 0 : y-1;
-    }
-    else if(c == '\''){
-      y = (y + 1 == Y_MAX) ? y : y+1;
-    }
-    else if((c >= '0' && c <= '9' ) || (c >= 'a' && c <= 'z')){
-      grid_screen[y*X_MAX+x] = c;
-      grid_color[y*X_MAX+x] = 3;
-    }
+    #endif
+
+    if(c == '[') x = (x - 1 < 0) ? 0 : x-1;
+    else if(c == ']') x = (x + 1 == X_MAX) ? x : x+1;
+    else if(c == '=') y = (y - 1 < 0) ? 0 : y-1;
+    else if(c == '\'') y = (y + 1 == Y_MAX) ? y : y+1;
+    else if((c >= '0' && c <= '9' ) || (c >= 'a' && c <= 'z')) grid_screen[y*X_MAX+x] = c;
     else if (check_instruction(c) == 1){
       switch (c){
         case ADD:

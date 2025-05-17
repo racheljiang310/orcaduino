@@ -11,6 +11,7 @@
 extern uint8_t get_index(int x_pos, int y_pos);
 extern char grid_screen[Y_MAX * X_MAX];
 extern uint8_t grid_color[Y_MAX * X_MAX];
+extern bool bangers[Y_MAX * X_MAX];
 extern int variables[36];
 extern int x, y;
 extern int memory;
@@ -22,38 +23,36 @@ extern int memory;
 /// @brief bangs
 void bang(){
     grid_screen[y*X_MAX+x] = BANG;
-    grid_color[y*X_MAX+x] = 1;
+    bangers[y*X_MAX+x] = true;
 }
 
 /// @brief Halts the operation @ (x, y+1) if it exists
 /// TODO: for each frame update, check if grid_screen[x, y-1] == HALT
 void halt(){
     grid_screen[y*X_MAX+x] = HALT;
-    grid_color[y*X_MAX+x] = 2;
 }
 
 /// @brief moves an 'E' to the right until it goes off screen
 void east(){
-    // update screen with operator
     grid_screen[y*X_MAX+x] = RIGHT;
-    grid_color[y*X_MAX+x] = 2;
+    bangers[y*X_MAX+x] = true;
 }
 /// @brief moves an 'E' to the right until it goes off screen
 void north(){
     // update screen with operator
     grid_screen[y*X_MAX+x] = UP;
-    grid_color[y*X_MAX+x] = 2;
+    bangers[y*X_MAX+x] = true;
 }
 /// @brief moves an 'S' downwards until it goes off screen
 void south(){
     grid_screen[y*X_MAX+x] = DOWN;
-    grid_color[y*X_MAX+x] = 2;
+    bangers[y*X_MAX+x] = true;
 
 }
 /// @brief moves an 'W' leftwards until it goes off screen
 void west(){
     grid_screen[y*X_MAX+x] = LEFT;
-    grid_color[y*X_MAX+x] = 2;
+    bangers[y*X_MAX+x] = true;
 }
 
 /// @brief creates a counter of some sense
@@ -202,7 +201,7 @@ void add(uint8_t a, uint8_t b){
     grid_color[a] = grid_color[b] = 2;
 
     uint8_t idx = get_index(0, 1);
-    grid_screen[idx] = UNDIGIFY(aval + bval);
+    grid_screen[idx] = UNDIGIFY((aval + bval) % 36);
     grid_color[idx] = 3; 
 
     idx = get_index(0, 0);
@@ -220,7 +219,7 @@ void sub(uint8_t a, uint8_t b){
     grid_color[a] = grid_color[b] = 2;
 
     uint8_t idx = get_index(0, 1);
-    grid_screen[idx] = UNDIGIFY(aval - bval);
+    grid_screen[idx] = UNDIGIFY(abs(aval - bval));
     grid_color[idx] = 3; 
 
     idx = get_index(0, 0);
@@ -238,7 +237,7 @@ void multiply(uint8_t a, uint8_t b){
     grid_color[a] = grid_color[b] = 2;
 
     uint8_t idx = get_index(0, 1);
-    grid_screen[idx] = UNDIGIFY(aval * bval);
+    grid_screen[idx] = UNDIGIFY((aval * bval) % 36);
     grid_color[idx] = 3; 
 
     idx = get_index(0, 0);
@@ -433,12 +432,12 @@ void generator(uint8_t x_v, uint8_t y_v, uint8_t len){
 
 /***** All things SPECIAL defined here ************************(******/
 
-void self(char cmd){
+// void self(char cmd){
 
-}
-void midi(char ch, char oct, char note, char velocity){
+// }
+// void midi(char ch, char oct, char note, char velocity){
 
-}
-void midi_cc(char ch, char knob, char val){
+// }
+// void midi_cc(char ch, char knob, char val){
 
-}
+// }

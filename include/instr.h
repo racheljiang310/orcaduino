@@ -9,21 +9,21 @@
 **********************************************************************/
 #include "stdint.h"
 /***** All things BASIC defined here *********************************/
-void bang();
-void halt();
-void east();
-void north();
-void south();
-void west();
+void bang();                                        // WORKS
+void halt();                                        // WORKS
+void east();                                        // WORKS
+void north();                                       // WORKS
+void south();                                       // WORKS
+void west();                                        // WORKS
 void comment(); // worry about this later
 
 void konkat(uint8_t len);
 void jxmper(uint8_t val);
 void jymper(uint8_t val);
 
-void add(uint8_t a, uint8_t b);
-void sub(uint8_t a, uint8_t b);
-void multiply(uint8_t a, uint8_t b); 
+void add(uint8_t a, uint8_t b);                     // WORKS
+void sub(uint8_t a, uint8_t b);                     // WORKS
+void multiply(uint8_t a, uint8_t b);                // WORKS
 
 void lesser(uint8_t a, uint8_t b); 
 void branch_if(uint8_t a, uint8_t b); 
@@ -47,9 +47,9 @@ void generator(uint8_t x_v, uint8_t y_v, uint8_t len);
 
 /***** All things SPECIAL defined here *******************************/
 
-void self(char cmd);
-void midi(char ch, char oct, char note, char velocity);
-void midi_cc(char ch, char knob, char val);
+// void self(char cmd);
+// void midi(char ch, char oct, char note, char velocity);
+// void midi_cc(char ch, char knob, char val);
 // void pitch(char oct, char note);
 // void byte(char high, char low);
 // void play(char ch, char oct, char note, char velocity);
