@@ -15,29 +15,24 @@ void east(uint8_t i, uint8_t j);                    // PASS
 void north(uint8_t i, uint8_t j);                   // FUNCTIONAL (need to get rid of lag)
 void south(uint8_t i, uint8_t j);                   // PASS
 void west(uint8_t i, uint8_t j);                    // FUNCTIONAL (need to get rid of lag)
-
-void konkat(uint8_t len);
 void add(uint8_t i, uint8_t j);                     // PASS
 void sub(uint8_t i, uint8_t j);                     // PASS
 void jxmper(uint8_t i, uint8_t j);                  // PASS
 void jymper(uint8_t i, uint8_t j);                  // PASS
 void multiply(uint8_t i, uint8_t j);                // PASS
-
 void lerp(uint8_t i, uint8_t j);                    // FUNCTIONAL (just a wierd function overall)
 void clock(uint8_t i, uint8_t j);                   // FUNCTIONAL (need to incorporate 'left'+timing a bit off)
 void delay_b(uint8_t i, uint8_t j);                 // FUNCTIONAL (need to incorporate 'left')
-void increment(uint8_t i, uint8_t j);
-
+void increment(uint8_t i, uint8_t j);               // PASS
 void lesser(uint8_t i, uint8_t j);                  // PASS
 void branch_if(uint8_t i, uint8_t j);               // PASS
 void rando(uint8_t i, uint8_t j);                   // PASS
-
-
 void variable(uint8_t i, uint8_t j);                // PASS
+
+void konkat(uint8_t len);
+void read(uint8_t i, uint8_t j);                    // TO TEST
 void push(uint8_t key, uint8_t len, uint8_t val);   
 void track(uint8_t idx, uint8_t len, uint8_t val); 
-
-void read(uint8_t row, uint8_t col); 
 void query(uint8_t row, uint8_t col, uint8_t len); 
 void write(uint8_t off_x, uint8_t off_y, uint8_t val); 
 void generator(uint8_t x_v, uint8_t y_v, uint8_t len); 

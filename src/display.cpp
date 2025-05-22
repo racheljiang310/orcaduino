@@ -8,7 +8,6 @@
 **********************************************************************/
 extern int x; 
 extern int y; 
-extern int memory;
 extern char variables[36];
 extern uint8_t bangers[Y_MAX * X_MAX];
 extern char grid_screen[Y_MAX * X_MAX];

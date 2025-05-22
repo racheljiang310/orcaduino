@@ -9,36 +9,38 @@
 
 #define DEBUG 0
 
-// control
+/***** All things CONTROLS *********************************/
+
+int x, y; // col, row
 uint8_t cycle = 0; // 8 average
 uint64_t last_step = 0; // previous step
 const uint64_t step_delay = 50; // tweak as needed
 
-char variables[36];  // stores numerical values for variables
-uint8_t bangers[Y_MAX * X_MAX];  // distinguishes between changes made in current vs previous cycle
-
-// 2D grid with colors: 0: nothing | 1: operation | 2: operands | 3: result | 4: cursor | 5: comments
+// colors: 0: nothing | 1: operation | 2: operands | 
+//         3: result  | 4: cursor    | 5: comments |
 uint8_t grid_color[Y_MAX * X_MAX];
+uint8_t bangers[Y_MAX * X_MAX];  // controls bang timing
 
-int x, y; // for col #, row #
-int memory; // honestly not sure why this is here
+/***** All things CONTANTS *********************************/
+char variables[36];  // stores vars
 char grid_screen[Y_MAX * X_MAX]; // 2D grid with characters
 
-// display
+/***** All things DISPLAY **********************************/
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
-int16_t ldc_max_x, ldc_max_y;
 
-// put function declarations here:
+/***** All things FUNC DECL ********************************/
 void draw_grid();
 void setup_display();
+
 bool check_bounds(int r, int c);
 bool check_instruction(char instruction);
+
 uint8_t get_index(int x_pos, int y_pos);
+/***** All things FUNC DEFN ********************************/
 
+/// @brief setup
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(9600);
-
   pinMode(LED_BUILTIN, OUTPUT);
   x = X_INIT; 
   y = Y_INIT; 
@@ -48,6 +50,7 @@ void setup() {
   Serial.println("Setup Complete...");
 }
 
+/// @brief main loop
 void loop() {
   check_bounds(x, y); // check bounds
   uint8_t index = y*X_MAX+x;
@@ -135,8 +138,8 @@ void setup_display(){
   tft.setTextColor(ST77XX_GREEN);
 
   // control logic
-  ldc_max_x = tft.width(); // horizontal length
-  ldc_max_y = tft.height(); // vertical length
+  int16_t ldc_max_x = tft.width(); // horizontal length
+  int16_t ldc_max_y = tft.height(); // vertical length
 
   #if DEBUG == 1
   char buffer[30];

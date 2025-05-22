@@ -13,12 +13,10 @@
  
 /*********************************************************************/
 
-extern int memory;
 extern uint8_t cycle;
 extern uint8_t bangers[Y_MAX * X_MAX];
 extern char grid_screen[Y_MAX * X_MAX];
 extern uint8_t grid_color[Y_MAX * X_MAX];
-extern uint8_t get_index(int x_pos, int y_pos);
 
 /*********************************************************************/
 
@@ -91,13 +89,9 @@ void update_frame(){
                     case VAR:
                         variable(i,j);
                         break;
-                    // case INC:
-                    //     uint8_t istp = DIGIFY(grid_screen[row*boost+col-1]);
-                    //     uint8_t imx = DIGIFY(grid_screen[row*boost+col+1]);
-                    //     uint8_t icr = DIGIFY(grid_screen[(row+1)*boost+col]);
-                    //     if (icr < imx) icr = (icr + istp) % imx;
-                    //     grid_screen[(row+1)*boost + col] = UNDIGIFY(icr);
-                    //     break;
+                    case INC:
+                        increment(i,j);
+                        break;
                     default:
                         break;
                 }

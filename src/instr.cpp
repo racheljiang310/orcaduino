@@ -8,14 +8,12 @@
  * aka our instruction set. More descriptions will be provided in the
  * function definitions.
 **********************************************************************/
-extern uint8_t get_index(int x_pos, int y_pos);
 extern char grid_screen[Y_MAX * X_MAX];
 extern uint8_t grid_color[Y_MAX * X_MAX];
 extern uint8_t bangers[Y_MAX * X_MAX];
 extern uint8_t variables[36];
 extern uint8_t cycle;
 extern int x, y;
-extern int memory;
 
 /***** All things BASIC defined here *********************************/
 
@@ -167,34 +165,27 @@ void lerp(uint8_t i, uint8_t j){
     grid_color[c_result] = 3;
 }
 
-/// @brief Increments by 'step' from [0, mod)
+/// @brief Increments by 'left' from [0, 'right')
 /// @param i index
 /// @param j index
 void increment(uint8_t i, uint8_t j){
 
     uint8_t index = j*X_MAX + i;
-    uint8_t minx = ISB36(grid_screen[index - 1]) ? DIGIFY(grid_screen[index - 1]) : 0;
-    uint8_t maxx = ISB36(grid_screen[index + 1]) ? DIGIFY(grid_screen[index + 1]) : 9;
+    uint8_t result = (j+1)*X_MAX + i;
+    uint8_t step = ISB36(grid_screen[index - 1]) ? DIGIFY(grid_screen[index - 1]) : 1;
+    uint8_t maxx = ISB36(grid_screen[index + 1]) ? DIGIFY(grid_screen[index + 1]) : DIGIFY('z');
 
-    uint8_t idx = get_index(0, 1);
-    grid_screen[idx] = '0';
-    grid_color[idx] = 3; 
-
-    idx = get_index(1, 0);
-    grid_color[idx] = 2;
-    idx = get_index(-1, 0);
-    grid_color[idx] = 2;
-
-    idx = get_index(0, 0);
-    grid_screen[idx] = INC;
-    grid_color[idx] = 1;
-
-    // uint8_t istp = DIGIFY(grid_screen[row*boost+col-1]);
-    // uint8_t imx = DIGIFY(grid_screen[row*boost+col+1]);
-    // uint8_t icr = DIGIFY(grid_screen[(row+1)*boost+col]);
-    // if (icr < imx) icr = (icr + istp) % imx;
-    // grid_screen[(row+1)*boost + col] = UNDIGIFY(icr);
-    // break;
+    if(ISB36(grid_screen[result])==false){
+        grid_screen[result] = '0';
+    }
+    else {
+        uint8_t current_val = DIGIFY(grid_screen[result]);
+        uint8_t next_val = (current_val + step) % maxx;
+        grid_screen[result] = UNDIGIFY(next_val);
+    }
+    grid_color[index] = 1; 
+    grid_color[index+1] = grid_color[index-1] = 2;
+    grid_color[(j+1)*X_MAX + i] = 3;
 }
 
 /***** Static ********************************************************/
@@ -349,6 +340,24 @@ void variable(uint8_t i, uint8_t j){
     }
 }
 
+/// @brief read cell given offset
+/// @param i index
+/// @param j index
+void read(uint8_t i, uint8_t j){
+
+    uint8_t index = j*X_MAX + i;
+    uint8_t x_off = grid_screen[index-1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index-2]);
+    uint8_t y_off = grid_screen[index+1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index-1]);
+
+    uint8_t read_index = (j+y_off)*X_MAX + i+x_off;
+    char value = grid_screen[read_index];
+    grid_screen[(j+1)*X_MAX + i] = value;
+
+    grid_color[index-1] = grid_color[index-2] = grid_color[read_index] = 2;
+    grid_color[(j+1)*X_MAX + i] = 3;
+    grid_color[index] = 1;
+}
+
 /// @brief ouputs note @ 'idx' from arbitrarily long 'val' of size 'len'
 /// @param idx the index % len value
 /// @param len size of val
@@ -363,8 +372,8 @@ void track(uint8_t idx, uint8_t len, uint8_t val){
     grid_color[(x*X_MAX)+y-2] = 2; 
     grid_color[(x*X_MAX)+y+1] = 2; 
     // result
-    memory = grid_screen[(x*X_MAX)+y+1+id];
-    grid_screen[(x*X_MAX)+y] = memory;
+    // memory = grid_screen[(x*X_MAX)+y+1+id];
+    // grid_screen[(x*X_MAX)+y] = memory;
     grid_color[(x*X_MAX)+y] = 3; 
 }
 /// @brief writes eastward operand
@@ -372,6 +381,11 @@ void track(uint8_t idx, uint8_t len, uint8_t val){
 /// @param len # slots
 /// @param val what to write
 void push(uint8_t key, uint8_t len, uint8_t val){
+
+    // uint8_t index = j*X_MAX + i;
+    // uint8_t key = grid_screen[index-1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index-2]);
+    // uint8_t len = grid_screen[index+1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index-1]);
+
     grid_screen[x*X_MAX+y] = PUSH;
     grid_color[x*X_MAX+y] = 1; 
 
@@ -385,27 +399,6 @@ void push(uint8_t key, uint8_t len, uint8_t val){
     grid_color[((x+1)*X_MAX)+y+id] = 3; 
 }
 
-/// @brief read cell given offset
-/// @param row x offset
-/// @param col y offset
-void read(uint8_t row, uint8_t col){
-
-    uint8_t x_off = DIGIFY(grid_screen[row])+1;
-    uint8_t y_off = DIGIFY(grid_screen[col]);
-    grid_color[row] = grid_color[col] = 2;
-
-    uint8_t idx = get_index(0, 0);
-    grid_screen[idx] = READ;
-    grid_color[idx] = 1;
-
-    idx = get_index(x_off, y_off);
-    memory = grid_screen[idx]; // read
-    grid_color[idx] = 2;
-
-    idx = get_index(0, 1);
-    grid_screen[idx] = memory; // write
-    grid_color[idx] = 3; 
-}
 /// @brief reads values from offset & length.
 /// @param x x-offset
 /// @param y y-offset
@@ -426,16 +419,28 @@ void query(uint8_t row, uint8_t col, uint8_t len){
 
     for(uint8_t i = 0; i < size; i){
         // read the byte
-        memory = DIGIFY(grid_screen[(x+x_off)*X_MAX+y+y_off]);
+        // memory = DIGIFY(grid_screen[(x+x_off)*X_MAX+y+y_off]);
         grid_color[(x+x_off)*X_MAX+y+y_off] = 2;
 
         // write the byte into result
-        grid_screen[(start_r)*X_MAX+start_c] = memory;
+        // grid_screen[(start_r)*X_MAX+start_c] = memory;
         grid_color[(start_r)*X_MAX+start_c] = 3;
         start_c++;
     }
 }
-void write(uint8_t off_x, uint8_t off_y, uint8_t val){
+
+/// @brief writes value into slot
+/// @param off_x 
+/// @param off_y 
+/// @param val 
+void write(uint8_t i, uint8_t j){
+
+    // fetch all the indices
+    uint8_t index = j*X_MAX + i;
+    uint8_t off_x = j*X_MAX + i-2;
+    uint8_t off_y = j*X_MAX + i-1;
+    uint8_t value = j*X_MAX + i+1;
+
     // update screen with operator
     grid_screen[x*X_MAX+y] = WRITE;
     grid_color[x*X_MAX+y] = 1; 
@@ -446,10 +451,10 @@ void write(uint8_t off_x, uint8_t off_y, uint8_t val){
     uint8_t y_off = DIGIFY(off_y); // one after operator
 
     // value to write
-    memory = DIGIFY(val);
+    // memory = DIGIFY(val);
 
     // put value into offsetted box
-    grid_screen[(x+1+y_off)*X_MAX+y+x_off] = memory;
+    // grid_screen[(x+1+y_off)*X_MAX+y+x_off] = memory;
     grid_color[(x+1+y_off)*X_MAX+y+x_off] = 3;
 }
 
@@ -462,14 +467,14 @@ void generator(uint8_t x_v, uint8_t y_v, uint8_t len){
     grid_screen[x*X_MAX+y] = GENER;
     grid_color[x*X_MAX+y] = 1; 
     // update screen with result & colors
-    memory = DIGIFY(len);
-    uint8_t xv = DIGIFY(x_v);
-    uint8_t yv = DIGIFY(y_v);
-    for(uint8_t i = 0; i < memory; i++){
-        grid_screen[((x+yv)*X_MAX)+(xv)+i] = grid_screen[x*X_MAX+y+i+1]; 
-        grid_color[x*X_MAX+y+i+1] = 2;
-        grid_color[((x+yv)*X_MAX)+(xv)+i] = 3; 
-    }
+    // memory = DIGIFY(len);
+    // uint8_t xv = DIGIFY(x_v);
+    // uint8_t yv = DIGIFY(y_v);
+    // for(uint8_t i = 0; i < memory; i++){
+    //     grid_screen[((x+yv)*X_MAX)+(xv)+i] = grid_screen[x*X_MAX+y+i+1]; 
+    //     grid_color[x*X_MAX+y+i+1] = 2;
+    //     grid_color[((x+yv)*X_MAX)+(xv)+i] = 3; 
+    // }
 }
 
 /// @brief comments, we can handle this later
