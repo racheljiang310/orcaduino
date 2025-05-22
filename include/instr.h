@@ -9,32 +9,32 @@
 **********************************************************************/
 #include "stdint.h"
 /***** All things BASIC defined here *********************************/
-void bang(uint8_t index);                           // TO TEST
-void halt();                                        // TO TEST
-void east(uint8_t i, uint8_t j);                    // TO TEST
-void north(uint8_t i, uint8_t j);                   // TO TEST
-void south(uint8_t i, uint8_t j);                   // TO TEST
-void west(uint8_t i, uint8_t j);                    // TO TEST
+void halt();                                        // PASS
+void bang(uint8_t index);                           // PASS
+void east(uint8_t i, uint8_t j);                    // PASS 
+void north(uint8_t i, uint8_t j);                   // FUNCTIONAL (need to get rid of lag)
+void south(uint8_t i, uint8_t j);                   // PASS
+void west(uint8_t i, uint8_t j);                    // FUNCTIONAL (need to get rid of lag)
 
 void konkat(uint8_t len);
-void add(uint8_t i, uint8_t j);                     // TO TEST
-void sub(uint8_t i, uint8_t j);                     // TO TEST
-void jxmper(uint8_t i, uint8_t j);                  // TO TEST
-void jymper(uint8_t i, uint8_t j);                  // TO TEST
-void multiply(uint8_t i, uint8_t j);                // TO TEST
+void add(uint8_t i, uint8_t j);                     // PASS
+void sub(uint8_t i, uint8_t j);                     // PASS
+void jxmper(uint8_t i, uint8_t j);                  // PASS
+void jymper(uint8_t i, uint8_t j);                  // PASS
+void multiply(uint8_t i, uint8_t j);                // PASS
 
-void lerp(uint8_t i, uint8_t j);                    // TO TEST
-void clock(uint8_t i, uint8_t j);                   // TO TEST
-void delay_b(uint8_t i, uint8_t j);                 // TO TEST
-void increment();
+void lerp(uint8_t i, uint8_t j);                    // FUNCTIONAL (just a wierd function overall)
+void clock(uint8_t i, uint8_t j);                   // FUNCTIONAL (need to incorporate 'left'+timing a bit off)
+void delay_b(uint8_t i, uint8_t j);                 // FUNCTIONAL (need to incorporate 'left')
+void increment(uint8_t i, uint8_t j);
 
-void lesser(uint8_t i, uint8_t j);                  // TO TEST
-void branch_if(uint8_t i, uint8_t j);               // TO TEST
-void rando(uint8_t minx, uint8_t maxx);             // TO IMPLEMENT
+void lesser(uint8_t i, uint8_t j);                  // PASS
+void branch_if(uint8_t i, uint8_t j);               // PASS
+void rando(uint8_t i, uint8_t j);                   // PASS
 
 
-void variable(uint8_t name, uint8_t value); 
-void push(uint8_t key, uint8_t len, uint8_t val); 
+void variable(uint8_t i, uint8_t j);                // PASS
+void push(uint8_t key, uint8_t len, uint8_t val);   
 void track(uint8_t idx, uint8_t len, uint8_t val); 
 
 void read(uint8_t row, uint8_t col); 

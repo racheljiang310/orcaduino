@@ -14,8 +14,8 @@ uint8_t cycle = 0; // 8 average
 uint64_t last_step = 0; // previous step
 const uint64_t step_delay = 50; // tweak as needed
 
-int variables[36];  // stores numerical values for variables
-bool bangers[Y_MAX * X_MAX];  // distinguishes between changes made in current vs previous cycle
+char variables[36];  // stores numerical values for variables
+uint8_t bangers[Y_MAX * X_MAX];  // distinguishes between changes made in current vs previous cycle
 
 // 2D grid with colors: 0: nothing | 1: operation | 2: operands | 3: result | 4: cursor | 5: comments
 uint8_t grid_color[Y_MAX * X_MAX];
@@ -43,6 +43,7 @@ void setup() {
   x = X_INIT; 
   y = Y_INIT; 
   init_grid(); // setup grid
+  init_bangers(); // setup bangers
   setup_display();
   Serial.println("Setup Complete...");
 }
@@ -62,21 +63,28 @@ void loop() {
     else if(c == '=') y = (y - 1 < 0) ? 0 : y-1;
     else if(c == '\'') y = (y + 1 == Y_MAX) ? y : y+1;
     else if((c >= '0' && c <= '9' ) || (c >= 'a' && c <= 'z')) grid_screen[index] = c;
-    else if (check_instruction(c) == 1){
-      grid_screen[index] = c; // have better filtering mechanism
+    else if (ISOP(c) && check_instruction(c) == 1)  {
+      if (c == RIGHT || c == LEFT || c == BANG || c == UP || c == DOWN){
+        bangers[index] = 1;
+      }
+      grid_screen[index] = c; 
     }
-    else{
-      Serial.println("Invalid instruction");
+    else if(c == '.'){
+      grid_screen[index] = c; 
     }
-  }
+    else {
+      Serial.print(c);
+      Serial.println(" => Invalid instruction");
+    }
 
+  }
   if ((millis() - last_step) > step_delay) {
     update_frame();
     draw_grid();
     last_step = millis();
   }
   cycle = (cycle + 1) % 8;
-  delay(100);
+  delay(50);
 }
 
 /// @brief Draws the grid and displays on LCD
@@ -97,11 +105,11 @@ void draw_grid() {
       else if (color == 1){
         tft.setTextColor(ST77XX_CYAN, ST77XX_BLACK);
       }
-      else if (color == 3){
-        tft.setTextColor(ST77XX_MAGENTA, ST77XX_BLACK);
-      }
       else if (color == 2){
         tft.setTextColor(ST77XX_ORANGE, ST77XX_BLACK);
+      }
+      else if (color == 3){
+        tft.setTextColor(ST77XX_GREEN, ST77XX_BLACK);
       }
       else {
         tft.setTextColor(ST77XX_WHITE, ST77XX_BLACK);

@@ -11,8 +11,8 @@
 extern uint8_t get_index(int x_pos, int y_pos);
 extern char grid_screen[Y_MAX * X_MAX];
 extern uint8_t grid_color[Y_MAX * X_MAX];
-extern bool bangers[Y_MAX * X_MAX];
-extern int variables[36];
+extern uint8_t bangers[Y_MAX * X_MAX];
+extern uint8_t variables[36];
 extern uint8_t cycle;
 extern int x, y;
 extern int memory;
@@ -24,15 +24,9 @@ extern int memory;
 /// @brief bangs once, updates bangers[]
 /// @param index index
 void bang(uint8_t index){
-    if(bangers[index] == true){
-        grid_color[index] = 0;
-        grid_screen[index] = NOP;
-        bangers[index] = false;
-    }
-    else {
-        grid_color[index] = 1;
-        bangers[index] = true;
-    }
+    grid_color[index] = 0;
+    grid_screen[index] = NOP;
+    bangers[index] = 0;
 }
 
 /// @brief Halts the operation @ (x, y+1) if it exists
@@ -46,16 +40,10 @@ void halt(){
 void east(uint8_t i, uint8_t j){
 
     uint8_t index = j*X_MAX + i;
-    if(bangers[index]){ // already banged
-        bangers[index] = false;
-        grid_screen[index] = NOP;
-        if(i+1 < X_MAX){
-            grid_screen[index+1] = RIGHT;
-            bangers[index+1] = true;
-        }
-    }
-    else{ // not yet banged
-        bangers[index] = true;
+    grid_screen[index] = NOP;
+    if(i+1 < X_MAX){
+        grid_screen[index+1] = RIGHT;
+        bangers[index+1] = 1;
     }
 }
 /// @brief moves an 'E' to the right until it goes off screen
@@ -63,16 +51,10 @@ void east(uint8_t i, uint8_t j){
 /// @param j index 
 void north(uint8_t i, uint8_t j){
     uint8_t index = j*X_MAX + i;
-    if(bangers[index]){ // already banged
-        bangers[index] = false;
-        grid_screen[index] = NOP;
-        if(j-1 >= 0){
-            grid_screen[(j-1)*X_MAX + i] = UP;
-            bangers[(j-1)*X_MAX + i] = true;
-        }
-    }
-    else{ // not yet banged
-        bangers[index] = true;
+    grid_screen[index] = NOP;
+    if(j-1 >= 0){
+        grid_screen[(j-1)*X_MAX + i] = UP;
+        bangers[(j-1)*X_MAX + i] = 1;
     }
 }
 /// @brief moves an 'S' downwards until it goes off screen
@@ -80,16 +62,10 @@ void north(uint8_t i, uint8_t j){
 /// @param j index 
 void south(uint8_t i, uint8_t j){
     uint8_t index = j*X_MAX + i;
-    if(bangers[index]){ // already banged
-        bangers[index] = false;
-        grid_screen[index] = NOP;
-        if(j+1 < Y_MAX){
-            grid_screen[(j+1)*X_MAX + i] = DOWN;
-            bangers[(j+1)*X_MAX + i] = true;
-        }
-    }
-    else{ // not yet banged
-        bangers[index] = true;
+    grid_screen[index] = NOP;
+    if(j+1 < Y_MAX){
+        grid_screen[(j+1)*X_MAX + i] = DOWN;
+        bangers[(j+1)*X_MAX + i] = 1;
     }
 }
 /// @brief moves an 'W' leftwards until it goes off screen
@@ -97,82 +73,74 @@ void south(uint8_t i, uint8_t j){
 /// @param j index 
 void west(uint8_t i, uint8_t j){
     uint8_t index = j*X_MAX + i;
-
-    if(bangers[index]){ // already banged
-        bangers[index] = false;
-        grid_screen[index] = NOP;
-        if(i-1 >= 0){
-            grid_screen[index-1] = LEFT;
-            bangers[index-1] = true;
-        }
-    }
-    else{ // not yet banged
-        bangers[index] = true;
+    grid_screen[index] = NOP;
+    if(i-1 >= 0){
+        grid_screen[index-1] = LEFT;
+        bangers[index-1] = 1;
     }
 }
 
-/// @brief counts from 0 to the max value specified in right
+/// @brief counts from 0 to the max value specified in right (exclusive)
 /// @param i index
 /// @param j index
 void clock(uint8_t i, uint8_t j){
     uint8_t index = j*X_MAX + i;
     uint8_t c_max = j*X_MAX + i+1;
+    uint8_t rate =  j*X_MAX + i-1; // don't worry about this for now
     uint8_t c_result = (j+1)*X_MAX + i;
-    uint8_t rate = j*X_MAX + i-1; // don't worry about this for now
-    if(!ISB36(grid_screen[c_result])){
-        grid_screen[c_result] = '0';
-    }
-    if(grid_screen[c_result] + 1 > grid_screen[c_max]){
+    uint8_t c_max_val = DIGIFY(grid_screen[c_max]);
+    
+    if (c_max_val == 0) c_max_val = 1;
+    if(ISB36(grid_screen[c_result])==false){
         grid_screen[c_result] = '0';
     }
     else{
-        grid_screen[c_result] += 1;
+        uint8_t current_val = DIGIFY(grid_screen[c_result]);
+        uint8_t next_val = (current_val + 1) % c_max_val;
+        grid_screen[c_result] = UNDIGIFY(next_val);
     }
     grid_color[index] = 1; 
     grid_color[c_max] = grid_color[rate] = 2;
     grid_color[c_result] = 3;
 }
-/// @brief creates a delay in a "bang"
+/// @brief creates a delay in a "bang" (max = 8)
+/// @param i index
+/// @param j index
 void delay_b(uint8_t i, uint8_t j){
 
     uint8_t index = j*X_MAX + i;
-    uint8_t left = j*X_MAX + i-1;
+    uint8_t left = j*X_MAX + i-1; // don't worry for now
     uint8_t right = j*X_MAX + i+1; // rate
     uint8_t result = (j+1)*X_MAX + i;
 
-    uint8_t curr = cycle % memory;
-    uint8_t post = (cycle-1) % memory;
+    uint8_t bang_rate = DIGIFY(grid_screen[right]);
+    if(bang_rate == 0) bang_rate = 1;
 
+    uint8_t curr = cycle % bang_rate;
     if(curr == 0){ // bang
         grid_screen[result] = BANG;
         grid_color[result] = 3;
+        bangers[result] = 1;
     }
-    else if(post == 0){ // revert the bang
-        grid_screen[index] = NOP;
-        grid_color[result] = 0;
-    }
-
+    else{ /* bang() takes care of the un-bang */ }
     grid_color[index] = 1; 
     grid_color[left] = grid_color[right] = 2;
-    grid_color[result] = 3;
 }
 
 /// @brief random # inclusive of min and max values
-/// @param minx min value's index
-/// @param maxx max value's index
-void rando(uint8_t minx, uint8_t maxx){
+/// @param i index
+/// @param j index
+void rando(uint8_t i, uint8_t j){
 
-    uint8_t mi = DIGIFY(grid_screen[minx]);
-    uint8_t ma = DIGIFY(grid_screen[maxx]);
-    grid_color[minx] = grid_color[maxx] = 2;
+    uint8_t index = j*X_MAX + i;
+    uint8_t minx = ISB36(grid_screen[index - 1]) ? DIGIFY(grid_screen[index - 1]) : 0;
+    uint8_t maxx = ISB36(grid_screen[index + 1]) ? DIGIFY(grid_screen[index + 1]) : 9;
+    uint8_t new_val = (uint8_t)(random(minx, maxx));
+    grid_screen[(j + 1) * X_MAX + i] = UNDIGIFY(new_val);
 
-    uint8_t idx = get_index(0, 1);
-    grid_screen[idx] = random(DIGIFY(mi), DIGIFY(ma));
-    grid_color[idx] = 3; 
-
-    idx = get_index(0, 0);
-    grid_screen[idx] = RAND;
-    grid_color[idx] = 1; 
+    grid_color[index] = 1; 
+    grid_color[index+1] = grid_color[index-1] = 2;
+    grid_color[(j+1)*X_MAX + i] = 3;
 }
 
 /// @brief increments until it reaches 'target'
@@ -180,19 +148,34 @@ void rando(uint8_t minx, uint8_t maxx){
 /// @param j index
 void lerp(uint8_t i, uint8_t j){
     uint8_t index = j*X_MAX + i;
-    uint8_t lt = DIGIFY(grid_screen[index-1]);
-    uint8_t lc = DIGIFY(grid_screen[index+1]);
-
-    if (lc < lt) lc++;
-    grid_screen[(j+1)*X_MAX + i] = UNDIGIFY(lc);
-
+    uint8_t c_max = j*X_MAX + i+1;
+    uint8_t c_start =  j*X_MAX + i-1;
+    uint8_t c_result = (j+1)*X_MAX + i;
+    uint8_t c_max_val = ISB36(grid_screen[c_max]) ? DIGIFY(grid_screen[c_max]) : 0;
+    char c_start_val = ISB36(grid_screen[c_start]) ? grid_screen[c_start] : '0';
+    
+    if(ISB36(grid_screen[c_result])==false){
+        grid_screen[c_result] = c_start_val;
+    }
+    else{
+        uint8_t current_val = DIGIFY(grid_screen[c_result]);
+        uint8_t next_val = (current_val + 1 > c_max_val) ? c_max_val : (current_val + 1);
+        grid_screen[c_result] = UNDIGIFY(next_val);
+    }
     grid_color[index] = 1; 
-    grid_color[grid_screen[index+1]] = grid_color[grid_screen[index-1]] = 2;
-    grid_color[(j+1)*X_MAX + i] = 3;
+    grid_color[c_max] = grid_color[c_start] = 2;
+    grid_color[c_result] = 3;
 }
 
 /// @brief Increments by 'step' from [0, mod)
-void increment(){
+/// @param i index
+/// @param j index
+void increment(uint8_t i, uint8_t j){
+
+    uint8_t index = j*X_MAX + i;
+    uint8_t minx = ISB36(grid_screen[index - 1]) ? DIGIFY(grid_screen[index - 1]) : 0;
+    uint8_t maxx = ISB36(grid_screen[index + 1]) ? DIGIFY(grid_screen[index + 1]) : 9;
+
     uint8_t idx = get_index(0, 1);
     grid_screen[idx] = '0';
     grid_color[idx] = 3; 
@@ -205,6 +188,13 @@ void increment(){
     idx = get_index(0, 0);
     grid_screen[idx] = INC;
     grid_color[idx] = 1;
+
+    // uint8_t istp = DIGIFY(grid_screen[row*boost+col-1]);
+    // uint8_t imx = DIGIFY(grid_screen[row*boost+col+1]);
+    // uint8_t icr = DIGIFY(grid_screen[(row+1)*boost+col]);
+    // if (icr < imx) icr = (icr + istp) % imx;
+    // grid_screen[(row+1)*boost + col] = UNDIGIFY(icr);
+    // break;
 }
 
 /***** Static ********************************************************/
@@ -230,8 +220,8 @@ void konkat(uint8_t len){
 /// @param i index 
 /// @param j index 
 void jxmper(uint8_t i, uint8_t j){
-    uint8_t aval = (j-1)*X_MAX + i; // west
-    uint8_t bval = (j+1)*X_MAX + i; // east
+    uint8_t aval = j*X_MAX + i-1; // west
+    uint8_t bval = j*X_MAX + i+1; // east
     grid_screen[bval] = grid_screen[aval];
 
     grid_color[j*X_MAX + i] = 1;
@@ -268,7 +258,7 @@ void add(uint8_t i, uint8_t j){
     grid_color[index] = 1;
 }
 
-/// @brief executes subtraction instruction
+/// @brief executes subtraction instruction (consider not having abs())
 /// @param i index 
 /// @param j index 
 void sub(uint8_t i, uint8_t j){
@@ -277,7 +267,7 @@ void sub(uint8_t i, uint8_t j){
     uint8_t aval = grid_screen[index-1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index-1]);
     uint8_t bval = grid_screen[index+1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index+1]);
 
-    grid_screen[(j+1)*X_MAX + i] = UNDIGIFY((aval - bval) % 36);
+    grid_screen[(j+1)*X_MAX + i] = UNDIGIFY(abs(aval - bval) % 36);
 
     grid_color[index+1] = grid_color[index-1] = 2;
     grid_color[(j+1)*X_MAX + i] = 3;
@@ -319,39 +309,43 @@ void lesser(uint8_t i, uint8_t j){
 /// @param j index
 void branch_if(uint8_t i, uint8_t j){ // Progress
     uint8_t index = j*X_MAX + i;
-    uint8_t aval = grid_screen[index-1];
-    uint8_t bval = grid_screen[index+1];
-    char result = aval == bval ?'*' : '.';
+    char aval = grid_screen[index-1];
+    char bval = grid_screen[index+1];
+    char result = aval == bval ? '*' : '.';
     grid_screen[(j+1)*X_MAX + i] = result;
+    if(result == '*'){
+        bangers[(j+1)*X_MAX + i] = 2;
+    }
     
-    grid_color[index-1] = grid_screen[index+1] = 2;
+    grid_color[index-1] = grid_color[index+1] = 2;
     grid_color[(j+1)*X_MAX + i] = 3;
     grid_color[index] = 1;
 }
 
 /// @brief creates/reads a variable
-/// @param name idx
-/// @param value idx
-void variable(uint8_t name, uint8_t value){
+/// @param i index
+/// @param j index
+void variable(uint8_t i, uint8_t j){
 
-    uint8_t aval = grid_screen[name];
-    uint8_t bval = grid_screen[value];
-    
+    uint8_t index = j*X_MAX + i;
 
-    uint8_t idx = get_index(0, 0);
-    grid_screen[idx] = VAR;
-    grid_color[idx] = 1;
-    grid_color[name] = grid_color[value] = 2;
+    grid_color[index] = 1;
+    grid_color[index-1] = grid_color[index+1] = 2;
+    grid_screen[(j+1)*X_MAX + i] = NOP;
+    grid_color[(j+1)*X_MAX + i] = 0;
 
+    if(ISB36(grid_screen[index+1]) == false && ISB36(grid_screen[index-1]) == false) return; // nothing
 
-    // if we're declaring or reading a variable
-    if(variables[value] != 100){
-        idx = get_index(0, 1);
-        grid_screen[idx] = variables[bval];
-        grid_color[idx] = 3; 
+    uint8_t name = DIGIFY(grid_screen[index-1]);
+    char value =grid_screen[index+1];
+
+    if(variables[DIGIFY(value)] == '?' && ISB36(grid_screen[index-1]) == true){ // var input, value exists => set
+        variables[name] = value;
     }
-    else{
-        variables[aval] = DIGIFY(bval);
+    else if(variables[DIGIFY(value)] != '?' && ISB36(grid_screen[index-1]) == false){ // var exists => read
+        grid_screen[(j+1)*X_MAX + i] = variables[DIGIFY(value)];
+        grid_color[(j+1)*X_MAX + i] = 3;
+        return;
     }
 }
 

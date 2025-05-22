@@ -15,7 +15,7 @@
 
 extern int memory;
 extern uint8_t cycle;
-extern bool bangers[Y_MAX * X_MAX];
+extern uint8_t bangers[Y_MAX * X_MAX];
 extern char grid_screen[Y_MAX * X_MAX];
 extern uint8_t grid_color[Y_MAX * X_MAX];
 extern uint8_t get_index(int x_pos, int y_pos);
@@ -28,6 +28,13 @@ void update_frame(){
         for(uint8_t j = 0; j < Y_MAX; j++){
             uint8_t index = j*boost + i;
             if(!ISOP(grid_screen[index])){
+                continue;
+            }
+            if (bangers[index] == 1){
+                bangers[index] = 0;
+                continue;
+            }
+            else if (bangers[index] == 2){
                 continue;
             }
             if((j == 0) || (j-1 >= 0 && grid_screen[(j-1)*boost + i] != HALT)){
@@ -78,12 +85,12 @@ void update_frame(){
                     case IF:
                         branch_if(i, j);
                         break;
-                    // case RAND: // choose another random character in between bounds
-                    //     uint8_t r_min = DIGIFY(grid_screen[row*boost + col-1]);
-                    //     uint8_t r_max = DIGIFY(grid_screen[row*boost + col+1]);
-                    //     memory = random(r_min, r_max);
-                    //     grid_screen[((row+1)*boost)+col] = UNDIGIFY(memory);
-                    //     break;
+                    case RAND:
+                        rando(i, j);
+                        break;
+                    case VAR:
+                        variable(i,j);
+                        break;
                     // case INC:
                     //     uint8_t istp = DIGIFY(grid_screen[row*boost+col-1]);
                     //     uint8_t imx = DIGIFY(grid_screen[row*boost+col+1]);

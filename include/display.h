@@ -10,6 +10,6 @@
  * be visualized in a special way via the OLED
 **********************************************************************/
 void init_grid();
-
+void init_bangers();
 // idea: surround OLED with LEDs, bang x and y mapping, otherwise, if it moves towards a direction, blink NWSE until run out of LEDS?
 #endif
