@@ -20,8 +20,14 @@ extern uint8_t grid_color[Y_MAX * X_MAX];
 
 /*********************************************************************/
 
+void clear_colors(){
+    for(int i = 0; i < (Y_MAX * X_MAX); i++){
+        grid_color[i] = 0;
+    }
+}
 void update_frame(){
     uint8_t boost = X_MAX;
+    clear_colors();
     for(uint8_t i = 0; i < X_MAX; i++){
         for(uint8_t j = 0; j < Y_MAX; j++){
             uint8_t index = j*boost + i;
@@ -91,6 +97,24 @@ void update_frame(){
                         break;
                     case INC:
                         increment(i,j);
+                        break;
+                    case READ:
+                        read(i, j);
+                        break;
+                    case PUSH:
+                        push(i, j);
+                        break;
+                    case KONCAT:
+                        konkat(i, j);
+                        break;
+                    case TRACK:
+                        track(i, j);
+                        break;
+                    case QUERY:
+                        query(i, j);
+                        break;
+                    case WRITE:
+                        write(i, j);
                         break;
                     default:
                         break;

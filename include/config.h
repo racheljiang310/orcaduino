@@ -62,7 +62,6 @@
 #define RAND       'R' 
 #define DOWN       'S'
 #define TRACK      'T' 
-// #define UCLID      'U' 
 #define VAR        'V' 
 #define LEFT       'W' 
 #define LERP       'Z' 
@@ -72,5 +71,6 @@
 #define JXMP       'Y' 
 #define WRITE      'X' 
 #define QUERY      'Q' 
+// #define UCLID      'U' 
 
 #endif

@@ -8,4 +8,4 @@
 **********************************************************************/
 #endif
 void update_frame();
-void clear();
+void clear_colors();
