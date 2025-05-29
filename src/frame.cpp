@@ -15,8 +15,8 @@
 
 extern uint8_t cycle;
 extern char variables[36];
-extern uint8_t bangers[Y_MAX * X_MAX];
 extern char grid_screen[Y_MAX * X_MAX];
+extern uint8_t bangers[Y_MAX * X_MAX];
 extern uint8_t grid_color[Y_MAX * X_MAX];
 
 /*********************************************************************/
@@ -38,14 +38,16 @@ void update_frame(){
             if(!ISOP(grid_screen[index])){
                 continue;
             }
-            if (bangers[index] == 1){
+            else if(bangers[index] == 1){
                 bangers[index] = 0;
-                continue;
+            }
+            else if (bangers[index] == 0 && grid_screen[index] == BANG){
+                bang(index);
             }
             else if (bangers[index] == 2){
-                continue;
+                bangers[index] = 2;
             }
-            if((j == 0) || (j-1 >= 0 && grid_screen[(j-1)*boost + i] != HALT)){
+            else if((j == 0) || (j-1 >= 0 && grid_screen[(j-1)*boost + i] != HALT)){
                 switch(grid_screen[index]){
                     uint8_t aval, bval;
                     case ADD:
@@ -59,7 +61,6 @@ void update_frame(){
                         break;
                     case BANG:
                         bang(index);
-                        break;
                     case RIGHT:
                         east(i, j);
                         break;

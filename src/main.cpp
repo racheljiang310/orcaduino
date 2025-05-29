@@ -14,7 +14,7 @@
 int x, y; // col, row
 uint8_t cycle = 0; // 8 average
 uint64_t last_step = 0; // previous step
-const uint64_t step_delay = 10; // tweak as needed
+const uint64_t step_delay = 50; // tweak as needed
 
 /* 
   colors: 0: nothing | 1: operation | 2: operands | 
@@ -36,14 +36,17 @@ void setup_display();
 
 bool check_bounds(int r, int c);
 bool check_instruction(char instruction);
-
-uint8_t get_index(int x_pos, int y_pos);
 /***** All things FUNC DEFN ********************************/
 
 /// @brief setup
 void setup() {
   Serial.begin(9600);
+
+  // built-in LED
   pinMode(LED_BUILTIN, OUTPUT);
+  
+  // clear button
+  pinMode(BUTTON1, INPUT_PULLUP); // pullup 
   x = X_INIT; 
   y = Y_INIT; 
   init_grid(); // setup grid
@@ -54,9 +57,18 @@ void setup() {
 
 /// @brief main loop
 void loop() {
+  
   check_bounds(x, y); // check bounds
   uint8_t index = y*X_MAX+x;
-  if (Serial.available()) {
+
+  // user or peripheral input occured
+  if (digitalRead(BUTTON1) == LOW) {
+    #if DEBUG == 1 
+    Serial.println("Clear pressed!");
+    #endif
+    clear_display();
+  } 
+  else if (Serial.available()) {
     char c = Serial.read();
 
     #if DEBUG == 1 
@@ -68,11 +80,21 @@ void loop() {
     else if(c == '=') y = (y - 1 < 0) ? 0 : y-1;
     else if(c == '\'') y = (y + 1 == Y_MAX) ? y : y+1;
     else if((c >= '0' && c <= '9' ) || (c >= 'a' && c <= 'z')) grid_screen[index] = c;
-    else if (ISOP(c) && check_instruction(c) == 1)  {
-      if (c == RIGHT || c == LEFT || c == BANG || c == UP || c == DOWN){
-        bangers[index] = 1;
+    else if (ISOP(c))  {
+      if(check_instruction(c) == 1){
+        if (c == RIGHT || c == DOWN){
+          bangers[index] = 1;
+        }
+        else if(c == BANG){
+          bangers[index] = 2;
+        }
+        grid_screen[index] = c; 
       }
-      grid_screen[index] = c; 
+      else{
+        Serial.print(c);
+        Serial.println(" => Invalid bounds");
+      }
+      
     }
     else if(c == '.'){
       grid_screen[index] = c; 
@@ -83,12 +105,15 @@ void loop() {
     }
 
   }
+  
+  // periodic frame updates
   if ((millis() - last_step) > step_delay) {
     update_frame();
     draw_grid();
     last_step = millis();
   }
   cycle = (cycle + 1) % 8;
+  delay(2*step_delay);
 }
 
 /// @brief Draws the grid and displays on LCD
@@ -159,15 +184,6 @@ bool check_bounds(int r, int c){
   if(c >= Y_MAX || c < 0){ return false;}
   if(r >= X_MAX || r < 0){ return false;}
   return true;
-}
-
-/// @brief fetches the grid index based on offset
-// @detail bc grid is 1D, ++ when walking the row
-/// @param x_pos offset for x 
-/// @param y_pos offset for y
-/// @return 
-uint8_t get_index(int x_pos, int y_pos){
-  return ((y+y_pos)*X_MAX) + x+x_pos;
 }
 
 /// @brief verifies the bounds are possible

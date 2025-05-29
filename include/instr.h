@@ -11,18 +11,18 @@
 /***** All things BASIC defined here *********************************/
 void halt();                                        // PASS
 void bang(uint8_t index);                           // PASS
-void east(uint8_t i, uint8_t j);                    // FUNCTIONAL (handle when it collides with other ops)
-void north(uint8_t i, uint8_t j);                   // FUNCTIONAL (need to get rid of lag)
-void south(uint8_t i, uint8_t j);                   // FUNCTIONAL (handle when it collides with other ops)
-void west(uint8_t i, uint8_t j);                    // FUNCTIONAL (need to get rid of lag)
+void east(uint8_t i, uint8_t j);                    // PASS
+void north(uint8_t i, uint8_t j);                   // PASS
+void south(uint8_t i, uint8_t j);                   // PASS
+void west(uint8_t i, uint8_t j);                    // PASS
 void add(uint8_t i, uint8_t j);                     // PASS
 void sub(uint8_t i, uint8_t j);                     // PASS
 void jxmper(uint8_t i, uint8_t j);                  // PASS
 void jymper(uint8_t i, uint8_t j);                  // PASS
 void multiply(uint8_t i, uint8_t j);                // PASS
-void lerp(uint8_t i, uint8_t j);                    // FUNCTIONAL (just a weird function overall)
-void clock(uint8_t i, uint8_t j);                   // FUNCTIONAL (timing a bit off)
-void delay_b(uint8_t i, uint8_t j);                 // FUNCTIONAL (need to incorporate 'left')
+void lerp(uint8_t i, uint8_t j);                    // PASS
+void clock(uint8_t i, uint8_t j);                   // FUNCTIONAL (ignored 'left')
+void delay_b(uint8_t i, uint8_t j);                 // FUNCTIONAL (ignored 'left')
 void increment(uint8_t i, uint8_t j);               // PASS
 void lesser(uint8_t i, uint8_t j);                  // PASS
 void branch_if(uint8_t i, uint8_t j);               // PASS
@@ -40,8 +40,6 @@ void generator(uint8_t i, uint8_t j);               // PASS
 
 /***** All things SPECIAL defined here *******************************/
 
-// void self(char cmd);
-// void midi(char ch, char oct, char note, char velocity);
 // void midi_cc(char ch, char knob, char val);
 // void pitch(char oct, char note);
 // void byte(char high, char low);

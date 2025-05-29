@@ -11,5 +11,6 @@
 **********************************************************************/
 void init_grid();
 void init_bangers();
+void clear_display();
 // idea: surround OLED with LEDs, bang x and y mapping, otherwise, if it moves towards a direction, blink NWSE until run out of LEDS?
 #endif

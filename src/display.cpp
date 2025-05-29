@@ -30,3 +30,9 @@ void init_bangers(){
         bangers[i] = 0;
     }
 }
+
+/// @brief clears canvas
+void clear_display(){
+    init_grid();
+    init_bangers();
+}
