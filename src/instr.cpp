@@ -202,21 +202,21 @@ void konkat(uint8_t i, uint8_t j){
     grid_color[index] = 1; // operator
     grid_color[index-1] = 2; // operand
 
-    for(uint8_t i = 0; i < param; i++){
-        if(grid_screen[vars+i] != '.'){
-            uint8_t var = DIGIFY(grid_screen[vars+i]);
+    for(uint8_t it = 0; it < param; it++){
+        if(grid_screen[vars+it] != '.'){
+            uint8_t var = DIGIFY(grid_screen[vars+it]);
             if((char)(variables[var]) != '?'){
-                grid_screen[result+i] = (char)variables[var];
+                grid_screen[result+it] = (char)variables[var];
             }
             else{
-                grid_screen[result+i] = '.';
+                grid_screen[result+it] = '.';
             }
         }
         else{
-            grid_screen[result+i] = '.';
+            grid_screen[result+it] = '.';
         }
-        grid_color[index+1+i] = 2; // operand
-        grid_color[result+i] = 3; // result
+        grid_color[index+1+it] = 2; // operand
+        grid_color[result+it] = 3; // result
     }
 }
 
@@ -378,16 +378,18 @@ void read(uint8_t i, uint8_t j){
 void track(uint8_t i, uint8_t j){
 
     uint8_t index = j*X_MAX + i;
-    uint8_t idx = grid_screen[index-2] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index-2]);
-    uint8_t len = grid_screen[index-1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index-1]);
-    uint8_t val = grid_screen[index+1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index+1]);
-    uint8_t id = DIGIFY(idx) % DIGIFY(len);
-    grid_screen[(j+1)*X_MAX + i] = grid_screen[index+1+id];
+    uint8_t idx = grid_screen[index-2] == '.' ? 0 : DIGIFY(grid_screen[index-2]);
+    uint8_t len = grid_screen[index-1] == '.' ? 1 : DIGIFY(grid_screen[index-1]);
+    char val = grid_screen[index+1+(idx % len)];
+
+    grid_screen[(j+1)*X_MAX + i] = val;
 
     grid_color[index] = 1; 
-    grid_color[index-2] = grid_color[index-1] =grid_color[index+1] = 2; 
     grid_color[(j+1)*X_MAX + i] = 3; 
-    
+    grid_color[index-2] = grid_color[index-1] = 2; 
+    for (size_t x = 0; x < len; x++){
+        grid_color[index+x+1] = 2;
+    }
 }
 /// @brief writes value to an indexed section
 /// @param i index
@@ -415,15 +417,14 @@ void query(uint8_t i, uint8_t j){
 
     uint8_t index = j*X_MAX + i;
     uint8_t result = (j+1)*X_MAX + i;
-    uint8_t x_off = grid_screen[index-3] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index-3]);
-    uint8_t y_off = grid_screen[index-2] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index-2]);
-    uint8_t len = grid_screen[index-1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index-1]);
-    uint8_t res_idx = (j-len)*X_MAX + (i+1);
+    uint8_t x_off = grid_screen[index-3] == '.' ? 0 : DIGIFY(grid_screen[index-3]);
+    uint8_t y_off = grid_screen[index-2] == '.' ? 0 : DIGIFY(grid_screen[index-2]);
+    uint8_t len = grid_screen[index-1] == '.' ? 1 : DIGIFY(grid_screen[index-1]);
 
-    for(uint8_t i = 0; i < len; i){
-        grid_screen[res_idx-i] = grid_screen[(j+y_off)*X_MAX+(i+x_off)];
-        grid_color[(j+y_off)*X_MAX+(i+x_off)] = 2;
-        grid_color[res_idx-i] = 3;
+    for(size_t it = 0; it < len; it++){
+        grid_screen[result-(len-it-1)] = grid_screen[(j+y_off)*X_MAX+(i+x_off+it+1)];
+        grid_color[(j+y_off)*X_MAX+(i+x_off+it+1)] = 2;
+        grid_color[result-(len-it-1)] = 3;
     }
 
     grid_color[index] = 1;
@@ -440,18 +441,19 @@ void write(uint8_t i, uint8_t j){
     uint8_t index = j*X_MAX + i;
     uint8_t off_x = j*X_MAX + i-2; // x_offset
     uint8_t off_y = j*X_MAX + i-1; // y_offset
-    uint8_t value = j*X_MAX + i+1; // value to write
+    char value = grid_screen[j*X_MAX + i+1]; // value to write
    
 
     // update screen with result & colors
-    uint8_t x_off = DIGIFY(off_x);
-    uint8_t y_off = DIGIFY(off_y); // one after operator
-    grid_screen[(x+1+y_off)*X_MAX+y+x_off] = grid_screen[value];
+    uint8_t x_off = grid_screen[off_x] == '.' ? 0 :DIGIFY(grid_screen[off_x]);
+    uint8_t y_off = grid_screen[off_y] == '.' ? 0 :DIGIFY(grid_screen[off_y]);
+    uint8_t result = (j+1+y_off)*X_MAX+i+x_off; // y_offset
+    grid_screen[result] = value;
     
     // update color
     grid_color[index] = 1; 
-    grid_color[(x+1+y_off)*X_MAX+y+x_off] = 3;
-    grid_color[off_x] = grid_color[off_y] = grid_color[value] = 2; 
+    grid_color[result] = 3;
+    grid_color[off_x] = grid_color[off_y] = grid_color[j*X_MAX + i+1] = 2; 
 }
 
 /// @brief [x|y|len|G|string of "len" size]
@@ -463,23 +465,21 @@ void generator(uint8_t i, uint8_t j){
     uint8_t index = j*X_MAX + i;
     uint8_t off_x = j*X_MAX + i-3; // x_offset
     uint8_t off_y = j*X_MAX + i-2; // y_offset
-    uint8_t value = j*X_MAX + i-1; // len
-    uint8_t rd_idx = j*X_MAX + i+1; // len
+    uint8_t ldx = j*X_MAX + i-1; // len
+
+    uint8_t length = grid_screen[ldx] == '.' ? 1 : DIGIFY(grid_screen[ldx]);
+    uint8_t x_off = grid_screen[off_x] == '.' ? 0 :DIGIFY(grid_screen[off_x]);
+    uint8_t y_off = grid_screen[off_y] == '.' ? 0 :DIGIFY(grid_screen[off_y]);
+    uint8_t base_idx = (j+1+y_off)*X_MAX+i+x_off;
     
     grid_color[index] = 1; 
-    // uint8_t xv = DIGIFY(x_v);
-    // uint8_t yv = DIGIFY(y_v);
-    // for(uint8_t i = 0; i < memory; i++){
-    //     grid_screen[((x+yv)*X_MAX)+(xv)+i] = grid_screen[x*X_MAX+y+i+1]; 
-    //     grid_color[x*X_MAX+y+i+1] = 2;
-    //     grid_color[((x+yv)*X_MAX)+(xv)+i] = 3; 
-    // }
+    grid_color[off_x] = grid_color[off_y] = 2;
+    for(size_t it = 0; it < length; it++){
+        grid_screen[base_idx+it] = grid_screen[index+1+it]; 
+        grid_color[index+1+it] = 2;
+        grid_color[base_idx+it] = 3; 
+    }
 }
-
-/// @brief comments, we can handle this later
-// void comment(){
-
-// }
 
 /***** All things SPECIAL defined here ************************(******/
 

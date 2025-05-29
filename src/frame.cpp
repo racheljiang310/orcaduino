@@ -14,6 +14,7 @@
 /*********************************************************************/
 
 extern uint8_t cycle;
+extern char variables[36];
 extern uint8_t bangers[Y_MAX * X_MAX];
 extern char grid_screen[Y_MAX * X_MAX];
 extern uint8_t grid_color[Y_MAX * X_MAX];
@@ -23,6 +24,9 @@ extern uint8_t grid_color[Y_MAX * X_MAX];
 void clear_colors(){
     for(int i = 0; i < (Y_MAX * X_MAX); i++){
         grid_color[i] = 0;
+    }
+    for(size_t i = 0; i < 36; i++){
+        variables[i] = '?';
     }
 }
 void update_frame(){
@@ -115,6 +119,9 @@ void update_frame(){
                         break;
                     case WRITE:
                         write(i, j);
+                        break;
+                    case GENER:
+                        generator(i,j);
                         break;
                     default:
                         break;

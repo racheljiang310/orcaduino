@@ -14,10 +14,12 @@
 int x, y; // col, row
 uint8_t cycle = 0; // 8 average
 uint64_t last_step = 0; // previous step
-const uint64_t step_delay = 50; // tweak as needed
+const uint64_t step_delay = 10; // tweak as needed
 
-// colors: 0: nothing | 1: operation | 2: operands | 
-//         3: result  | 4: cursor    | 5: comments |
+/* 
+  colors: 0: nothing | 1: operation | 2: operands | 
+          3: result  | 4: cursor    | 5: comments | 
+*/
 uint8_t grid_color[Y_MAX * X_MAX];
 uint8_t bangers[Y_MAX * X_MAX];  // controls bang timing
 
@@ -87,7 +89,6 @@ void loop() {
     last_step = millis();
   }
   cycle = (cycle + 1) % 8;
-  delay(50);
 }
 
 /// @brief Draws the grid and displays on LCD
@@ -174,6 +175,7 @@ uint8_t get_index(int x_pos, int y_pos){
 /// @return instruction enum
 bool check_instruction(char instruction){
   uint8_t a, b, c;
+  uint8_t index = y*X_MAX+x;
   // typically capital letters
   switch (instruction){
     case ADD:
@@ -192,44 +194,44 @@ bool check_instruction(char instruction){
     case DOWN:
     case LEFT:
     case BANG:
-    case COMMENT:
       return (y >= 0) && (y < Y_MAX) && (x < Y_MAX) && (x >= 0);
     case GENER:
-      a = DIGIFY(grid_screen[y*X_MAX+x-1]);
-      bool basic = (y+1 < Y_MAX) && (x-3 >= 0) && (x+a < X_MAX);
-      b = DIGIFY(grid_screen[y*X_MAX+x-3]);
-      c = DIGIFY(grid_screen[y*X_MAX+x-2]);
-      bool bounds = (x+b < X_MAX) && (y+c < Y_MAX);
-      return basic && bounds;
+      bool basic = x-3 >= 0;
+      a = grid_screen[index-1] == '.' ? 0 : DIGIFY(grid_screen[index-1]);
+      basic &= (x+a+1 < X_MAX);
+      b = grid_screen[index-2] == '.' ? 0 : DIGIFY(grid_screen[index-2]);
+      basic &= (y+b+1 < Y_MAX);      
+      return basic;
     case HALT:
       return (y + 1 < Y_MAX);
     case JYMP:
       return (y + 1 < Y_MAX) && (y - 1 >= 0);
     case KONCAT:
-      a = DIGIFY(grid_screen[x*X_MAX+y-1]);
-      return (y+1 < Y_MAX) && (x-1 >= 0) && (x+a < X_MAX);
+      a = grid_screen[index-1] == '.' ? 0 : DIGIFY(grid_screen[index-1]);
+      return (y+1 < Y_MAX) && (x-1 >= 0) && (x+a+1 < X_MAX);
     case VAR:
     case JXMP:
       return (x-1 >= 0) && (x+1 < Y_MAX);
     case PUSH:
-      a = DIGIFY(grid_screen[y*X_MAX+x-1]);
-      return (x-2 >= 0) && (x+a-1 < X_MAX) && (y+1 < Y_MAX);
+      a = grid_screen[index-1] == '.' ? 0 : DIGIFY(grid_screen[index-1]);
+      return (x-2 >= 0) && (x+a < X_MAX) && (y+1 < Y_MAX);
     case READ: 
-      a = DIGIFY(grid_screen[y*X_MAX+x-1]);
-      b = DIGIFY(grid_screen[y*X_MAX+x-2]);
-      return (x-2 >= 0) && (y+1 < Y_MAX) && (x+b < X_MAX) && (y + a < Y_MAX);
+      a = grid_screen[index-1] == '.' ? 0 : DIGIFY(grid_screen[index-1]);
+      b = grid_screen[index-2] == '.' ? 1 : DIGIFY(grid_screen[index-2]);
+      return (x-2 >= 0) && (y+1 < Y_MAX) && (x+b < X_MAX) && (y+a < Y_MAX);
     case QUERY:
-      a = DIGIFY(grid_screen[y*X_MAX+x-1]);
-      b = DIGIFY(grid_screen[y*X_MAX+x-2]);
-      c = DIGIFY(grid_screen[y*X_MAX+x-3]);
-      return (x-2 >= 0) && (y+1 < Y_MAX) && (x-a >= 0) && (x+c + a < X_MAX) && (y + b < Y_MAX);
+      a = grid_screen[index-1] == '.' ? 1 : DIGIFY(grid_screen[index-1]);
+      b = grid_screen[index-2] == '.' ? 0 : DIGIFY(grid_screen[index-2]);
+      c = grid_screen[index-3] == '.' ? 0 : DIGIFY(grid_screen[index-3]);
+      return (y+1 < Y_MAX) && (x-3 >= 0) 
+            && (x+c+a < X_MAX) && (y+b < Y_MAX);
     case TRACK:
-      a = DIGIFY(grid_screen[y*X_MAX+x-1]);
-      return (x-2 >= 0) && (x+1 < X_MAX) && (y+1 < Y_MAX) && (x + a < X_MAX);
+      a = grid_screen[index-1] == '.' ? 1 : DIGIFY(grid_screen[index-1]);
+      return (x-2 >= 0) && (y+1 < Y_MAX) && (x + a < X_MAX);
     case WRITE:
-      a = DIGIFY(grid_screen[y*X_MAX+x-1]);
-      b = DIGIFY(grid_screen[y*X_MAX+x-2]);
-      return (x-2 >= 0) && (x+1 < X_MAX) && (y+1+a< Y_MAX) && (x + b < X_MAX);
+      a = grid_screen[index-1] == '.' ? 1 : DIGIFY(grid_screen[index-1]);
+      b = grid_screen[index-2] == '.' ? 0 : DIGIFY(grid_screen[index-2]);
+      return (x-2 >= 0) && (x+1 < X_MAX) && (y+a< Y_MAX) && (x+b < X_MAX);
     default:
       break;
   }
