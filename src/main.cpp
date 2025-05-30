@@ -11,17 +11,35 @@
 
 /***** All things CONTROLS *********************************/
 
+/***********************************************************
+
+  | LED |  | LED | LED | LED | LED | LED | LED | LED | LED | LED |   | LED |
+  | LED |   _______________________________________________________  | LED |
+  | LED |  |                                                       | | LED |
+  | LED |  |                                                       | | LED | 
+  | LED |  |                                                       | | LED |
+  | LED |  |                                                       | | LED |
+  | LED |  |                                                       | | LED | 
+  | LED |  |                                                       | | LED |
+  | LED |  |                                                       | | LED |
+  | LED |  | _____________________________________________________ | | LED | 
+  | LED |  | LED | LED | LED | LED | LED | LED | LED | LED | LED |   | LED | 
+
+************************************************************/
+
 int x, y; // col, row
 uint8_t cycle = 0; // 8 average
 uint64_t last_step = 0; // previous step
 const uint64_t step_delay = 50; // tweak as needed
 
-/* 
-  colors: 0: nothing | 1: operation | 2: operands | 
-          3: result  | 4: cursor    | 5: comments | 
+/* colors: 0: nothing | 1: operation | 2: operands | 
+           3: result  | 4: cursor    | 5: comments | 
 */
 uint8_t grid_color[Y_MAX * X_MAX];
 uint8_t bangers[Y_MAX * X_MAX];  // controls bang timing
+
+/* colors: 0: RED | 1: BLUE | 2: GREEN | 3: YELLOW | */
+uint8_t led_bangers[4];
 
 /***** All things CONTANTS *********************************/
 char variables[36];  // stores vars
@@ -47,6 +65,12 @@ void setup() {
   
   // clear button
   pinMode(BUTTON1, INPUT_PULLUP); // pullup 
+
+  pinMode(RED_LED, OUTPUT); // north led
+  pinMode(GREEN_LED, OUTPUT); // south led
+  pinMode(BLUE_LED, OUTPUT); // east led
+  pinMode(YELLOW_LED, OUTPUT); // west led
+
   x = X_INIT; 
   y = Y_INIT; 
   init_grid(); // setup grid
@@ -57,7 +81,6 @@ void setup() {
 
 /// @brief main loop
 void loop() {
-  
   check_bounds(x, y); // check bounds
   uint8_t index = y*X_MAX+x;
 
@@ -128,7 +151,7 @@ void draw_grid() {
       char val = grid_screen[index];
       uint8_t color = grid_color[index];
 
-      if(x == i && y == j){
+      if(x == i && y == j){ // cursor color
         tft.setTextColor(ST77XX_BLACK, ST77XX_WHITE);
       }
       else if (color == 1){
@@ -213,9 +236,9 @@ bool check_instruction(char instruction){
       return (y >= 0) && (y < Y_MAX) && (x < Y_MAX) && (x >= 0);
     case GENER:
       bool basic = x-3 >= 0;
-      a = grid_screen[index-1] == '.' ? 0 : DIGIFY(grid_screen[index-1]);
+      a = !ISB36(grid_screen[index-1]) ? 0 : DIGIFY(grid_screen[index-1]);
       basic &= (x+a+1 < X_MAX);
-      b = grid_screen[index-2] == '.' ? 0 : DIGIFY(grid_screen[index-2]);
+      b = !ISB36(grid_screen[index-2]) ? 0 : DIGIFY(grid_screen[index-2]);
       basic &= (y+b+1 < Y_MAX);      
       return basic;
     case HALT:
@@ -223,30 +246,30 @@ bool check_instruction(char instruction){
     case JYMP:
       return (y + 1 < Y_MAX) && (y - 1 >= 0);
     case KONCAT:
-      a = grid_screen[index-1] == '.' ? 0 : DIGIFY(grid_screen[index-1]);
+      a = !ISB36(grid_screen[index-1]) ? 0 : DIGIFY(grid_screen[index-1]);
       return (y+1 < Y_MAX) && (x-1 >= 0) && (x+a+1 < X_MAX);
     case VAR:
     case JXMP:
       return (x-1 >= 0) && (x+1 < Y_MAX);
     case PUSH:
-      a = grid_screen[index-1] == '.' ? 0 : DIGIFY(grid_screen[index-1]);
+      a = !ISB36(grid_screen[index-1]) ? 0 : DIGIFY(grid_screen[index-1]);
       return (x-2 >= 0) && (x+a < X_MAX) && (y+1 < Y_MAX);
     case READ: 
-      a = grid_screen[index-1] == '.' ? 0 : DIGIFY(grid_screen[index-1]);
-      b = grid_screen[index-2] == '.' ? 1 : DIGIFY(grid_screen[index-2]);
+      a = !ISB36(grid_screen[index-1]) ? 0 : DIGIFY(grid_screen[index-1]);
+      b = !ISB36(grid_screen[index-2]) ? 1 : DIGIFY(grid_screen[index-2]);
       return (x-2 >= 0) && (y+1 < Y_MAX) && (x+b < X_MAX) && (y+a < Y_MAX);
     case QUERY:
-      a = grid_screen[index-1] == '.' ? 1 : DIGIFY(grid_screen[index-1]);
-      b = grid_screen[index-2] == '.' ? 0 : DIGIFY(grid_screen[index-2]);
-      c = grid_screen[index-3] == '.' ? 0 : DIGIFY(grid_screen[index-3]);
+      a = !ISB36(grid_screen[index-1]) ? 1 : DIGIFY(grid_screen[index-1]);
+      b = !ISB36(grid_screen[index-2]) ? 0 : DIGIFY(grid_screen[index-2]);
+      c = !ISB36(grid_screen[index-3]) ? 0 : DIGIFY(grid_screen[index-3]);
       return (y+1 < Y_MAX) && (x-3 >= 0) 
             && (x+c+a < X_MAX) && (y+b < Y_MAX);
     case TRACK:
-      a = grid_screen[index-1] == '.' ? 1 : DIGIFY(grid_screen[index-1]);
+      a = !ISB36(grid_screen[index-1]) ? 1 : DIGIFY(grid_screen[index-1]);
       return (x-2 >= 0) && (y+1 < Y_MAX) && (x + a < X_MAX);
     case WRITE:
-      a = grid_screen[index-1] == '.' ? 1 : DIGIFY(grid_screen[index-1]);
-      b = grid_screen[index-2] == '.' ? 0 : DIGIFY(grid_screen[index-2]);
+      a = !ISB36(grid_screen[index-1]) ? 1 : DIGIFY(grid_screen[index-1]);
+      b = !ISB36(grid_screen[index-2]) ? 0 : DIGIFY(grid_screen[index-2]);
       return (x-2 >= 0) && (x+1 < X_MAX) && (y+a< Y_MAX) && (x+b < X_MAX);
     default:
       break;

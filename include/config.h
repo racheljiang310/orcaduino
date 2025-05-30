@@ -32,6 +32,10 @@
 #define TFT_DC     9
 #define TFT_RST    8
 #define BUTTON1    2
+#define RED_LED    3 // NORTH
+#define BLUE_LED   4 // EAST
+#define GREEN_LED  5 // SOUTH
+#define YELLOW_LED 6 // WEST
 
 /***** System Commands **********************************************/
 
@@ -72,6 +76,6 @@
 #define JXMP       'Y' 
 #define WRITE      'X' 
 #define QUERY      'Q' 
-// #define UCLID      'U' 
+#define FIREWORK   'U' 
 
 #endif

@@ -15,6 +15,7 @@
 
 extern uint8_t cycle;
 extern char variables[36];
+extern uint8_t led_bangers[4];
 extern char grid_screen[Y_MAX * X_MAX];
 extern uint8_t bangers[Y_MAX * X_MAX];
 extern uint8_t grid_color[Y_MAX * X_MAX];
@@ -31,7 +32,7 @@ void clear_colors(){
 }
 void update_frame(){
     uint8_t boost = X_MAX;
-    clear_colors();
+    clear_colors(); // clears colors & variables
     for(uint8_t i = 0; i < X_MAX; i++){
         for(uint8_t j = 0; j < Y_MAX; j++){
             uint8_t index = j*boost + i;
@@ -49,7 +50,6 @@ void update_frame(){
             }
             else if((j == 0) || (j-1 >= 0 && grid_screen[(j-1)*boost + i] != HALT)){
                 switch(grid_screen[index]){
-                    uint8_t aval, bval;
                     case ADD:
                         add(i, j);
                         break;
@@ -124,10 +124,40 @@ void update_frame(){
                     case GENER:
                         generator(i,j);
                         break;
+                    case FIREWORK:
+                        starburst(i, j);
+                        break;
                     default:
                         break;
                 }
             }
         }   
+    }
+    if(led_bangers[0] = 1){
+        led_bangers[0] = 0;
+    }
+    else{
+        digitalWrite(RED_LED, HIGH);
+    }
+
+    if(led_bangers[1] = 1){
+        led_bangers[1] = 0;
+    }
+    else{
+        digitalWrite(BLUE_LED, HIGH);
+    }
+
+    if(led_bangers[2] = 1){
+        led_bangers[2] = 0;
+    }
+    else{
+        digitalWrite(GREEN_LED, HIGH);
+    }
+
+    if(led_bangers[3] = 1){
+        led_bangers[3] = 0;
+    }
+    else{
+        digitalWrite(YELLOW_LED, HIGH);
     }
 }

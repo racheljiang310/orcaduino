@@ -11,6 +11,7 @@
 extern char grid_screen[Y_MAX * X_MAX];
 extern uint8_t grid_color[Y_MAX * X_MAX];
 extern uint8_t bangers[Y_MAX * X_MAX];
+extern uint8_t led_bangers[4];
 extern uint8_t variables[36];
 extern uint8_t cycle;
 extern int x, y;
@@ -26,11 +27,6 @@ void bang(uint8_t index){
     grid_color[index] = 0;
 }
 
-/// @brief Halts the operation @ (x, y+1) if it exists
-void halt(){
-    grid_screen[y*X_MAX+x] = HALT; // honestly don't even need this line either
-}
-
 /// @brief moves an 'E' to the right until it goes off screen
 /// @param i index 
 /// @param j index 
@@ -42,6 +38,10 @@ void east(uint8_t i, uint8_t j){
         grid_screen[index+1] = RIGHT;
         bangers[index+1] = 1;
     }
+    else if (i + 1 == X_MAX){
+        digitalWrite(BLUE_LED, LOW);
+        led_bangers[1] = 1;
+    }
 }
 /// @brief moves an 'E' to the right until it goes off screen
 /// @param i index 
@@ -51,6 +51,10 @@ void north(uint8_t i, uint8_t j){
     grid_screen[index] = NOP;
     if(j-1 >= 0 && grid_screen[(j-1)*X_MAX + i] == '.'){
         grid_screen[(j-1)*X_MAX + i] = UP;
+    }
+    else if (j - 1 < 0){
+        digitalWrite(RED_LED, LOW);
+        led_bangers[0] = 1;
     }
 }
 /// @brief moves an 'S' downwards until it goes off screen
@@ -63,6 +67,10 @@ void south(uint8_t i, uint8_t j){
         grid_screen[(j+1)*X_MAX + i] = DOWN;
         bangers[(j+1)*X_MAX + i] = 1;
     }
+    else if (j+1 < Y_MAX){
+        digitalWrite(GREEN_LED, LOW);
+        led_bangers[2] = 1;
+    }
 }
 /// @brief moves an 'W' leftwards until it goes off screen
 /// @param i index 
@@ -72,6 +80,10 @@ void west(uint8_t i, uint8_t j){
     grid_screen[index] = NOP;
     if(i-1 >= 0 && grid_screen[index-1] == '.'){
         grid_screen[index-1] = LEFT;
+    }
+    else if (i-1 >= 0){
+        digitalWrite(YELLOW_LED, LOW);
+        led_bangers[3] = 1;
     }
 }
 
@@ -83,16 +95,17 @@ void clock(uint8_t i, uint8_t j){
     uint8_t c_max = j*X_MAX + i+1;
     uint8_t rate =  j*X_MAX + i-1; // don't worry about this for now
     uint8_t c_result = (j+1)*X_MAX + i;
-    uint8_t c_max_val = grid_screen[c_max] == '.' ? 'a' : DIGIFY(grid_screen[c_max]);
+    uint8_t c_max_val = !ISB36(grid_screen[c_max]) ? 10 : DIGIFY(grid_screen[c_max]);
     
-    if(ISB36(grid_screen[c_result])==false){
+    if(!ISB36(grid_screen[c_result])){
         grid_screen[c_result] = '0';
     }
     else{
-        uint8_t current_val = DIGIFY(grid_screen[c_result]);
+        uint8_t current_val = !ISB36(grid_screen[c_result]) ? 0 : DIGIFY(grid_screen[c_result]);
         uint8_t next_val = (current_val + 1) % c_max_val;
         grid_screen[c_result] = UNDIGIFY(next_val);
     }
+
     grid_color[index] = 1; 
     grid_color[c_max] = grid_color[rate] = 2;
     grid_color[c_result] = 3;
@@ -107,8 +120,9 @@ void delay_b(uint8_t i, uint8_t j){
     uint8_t right = index+1; // rate
     uint8_t result = (j+1)*X_MAX + i;
 
-    uint8_t bang_rate = grid_screen[right] == '.' ? 1 : DIGIFY(grid_screen[right]);
+    uint8_t bang_rate = !ISB36(grid_screen[right]) ? 1 : DIGIFY(grid_screen[right]);
     uint8_t curr = cycle % bang_rate;
+    
     if(curr == 0){
         grid_screen[result] = BANG;
         grid_color[result] = 3;
@@ -122,7 +136,6 @@ void delay_b(uint8_t i, uint8_t j){
 /// @param i index
 /// @param j index
 void rando(uint8_t i, uint8_t j){
-
     uint8_t index = j*X_MAX + i;
     uint8_t minx = ISB36(grid_screen[index - 1]) ? DIGIFY(grid_screen[index - 1]) : 0;
     uint8_t maxx = ISB36(grid_screen[index + 1]) ? DIGIFY(grid_screen[index + 1]) : 9;
@@ -173,7 +186,7 @@ void increment(uint8_t i, uint8_t j){
         grid_screen[result] = '0';
     }
     else {
-        uint8_t current_val = DIGIFY(grid_screen[result]);
+        uint8_t current_val = !ISB36(grid_screen[result]) ? 0 : DIGIFY(grid_screen[result]);
         uint8_t next_val = (current_val + step) % maxx;
         grid_screen[result] = UNDIGIFY(next_val);
     }
@@ -190,7 +203,7 @@ void increment(uint8_t i, uint8_t j){
 void konkat(uint8_t i, uint8_t j){
 
     uint8_t index = j*X_MAX + i;
-    uint8_t param = grid_screen[j*X_MAX + i - 1] == '.' ? 1: DIGIFY(grid_screen[j*X_MAX + i - 1]);
+    uint8_t param = !ISB36(grid_screen[j*X_MAX + i - 1]) ? 1: DIGIFY(grid_screen[j*X_MAX + i - 1]);
     uint8_t vars = j*X_MAX + i + 1;
     uint8_t result = (j+1)*X_MAX + i + 1;
     grid_color[index] = 1; // operator
@@ -246,8 +259,8 @@ void jymper(uint8_t i, uint8_t j){
 void add(uint8_t i, uint8_t j){
 
     uint8_t index = j*X_MAX + i;
-    uint8_t aval = grid_screen[index-1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index-1]);
-    uint8_t bval = grid_screen[index+1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index+1]);
+    uint8_t aval = !ISB36(grid_screen[index-1]) ? 0 : DIGIFY(grid_screen[index-1]);
+    uint8_t bval = !ISB36(grid_screen[index+1]) ? 0 : DIGIFY(grid_screen[index+1]);
 
     grid_screen[(j+1)*X_MAX + i] = UNDIGIFY((aval + bval) % 36);
 
@@ -262,8 +275,8 @@ void add(uint8_t i, uint8_t j){
 void sub(uint8_t i, uint8_t j){
 
     uint8_t index = j*X_MAX + i;
-    uint8_t aval = grid_screen[index-1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index-1]);
-    uint8_t bval = grid_screen[index+1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index+1]);
+    uint8_t aval = !ISB36(grid_screen[index-1]) ? 0 : DIGIFY(grid_screen[index-1]);
+    uint8_t bval = !ISB36(grid_screen[index+1]) ? 0 : DIGIFY(grid_screen[index+1]);
 
     grid_screen[(j+1)*X_MAX + i] = UNDIGIFY(abs(aval - bval) % 36);
 
@@ -278,8 +291,8 @@ void sub(uint8_t i, uint8_t j){
 void multiply(uint8_t i, uint8_t j){
 
     uint8_t index = j*X_MAX + i;
-    uint8_t aval = grid_screen[index-1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index-1]);
-    uint8_t bval = grid_screen[index+1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index+1]);
+    uint8_t aval = !ISB36(grid_screen[index-1]) ? 0 : DIGIFY(grid_screen[index-1]);
+    uint8_t bval = !ISB36(grid_screen[index+1]) ? 0 : DIGIFY(grid_screen[index+1]);
     grid_screen[(j+1)*X_MAX + i] = UNDIGIFY((aval * bval)% 36);
 
     grid_color[index+1] = grid_color[index-1] = 2;
@@ -293,8 +306,8 @@ void multiply(uint8_t i, uint8_t j){
 void lesser(uint8_t i, uint8_t j){
 
     uint8_t index = j*X_MAX + i;
-    uint8_t aval = grid_screen[index-1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index-1]);
-    uint8_t bval = grid_screen[index+1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index+1]);
+    uint8_t aval = !ISB36(grid_screen[index-1]) ? 0 : DIGIFY(grid_screen[index-1]);
+    uint8_t bval = !ISB36(grid_screen[index+1]) ? 0 : DIGIFY(grid_screen[index+1]);
     grid_screen[(j+1)*X_MAX + i] = UNDIGIFY(aval < bval ? aval : bval);
 
     grid_color[index-1] = grid_color[index+1] = 2;
@@ -354,8 +367,8 @@ void variable(uint8_t i, uint8_t j){
 void read(uint8_t i, uint8_t j){
 
     uint8_t index = j*X_MAX + i;
-    uint8_t x_off = grid_screen[index-2] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index-2]);
-    uint8_t y_off = grid_screen[index-1] == '.' ? DIGIFY('0') : DIGIFY(grid_screen[index-1]);
+    uint8_t x_off = !ISB36(grid_screen[index-2]) ? 0 : DIGIFY(grid_screen[index-2]);
+    uint8_t y_off = !ISB36(grid_screen[index-1]) ? 0 : DIGIFY(grid_screen[index-1]);
 
     uint8_t read_index = (j+y_off)*X_MAX + (i+x_off + 1);
     char value = grid_screen[read_index];
@@ -372,8 +385,8 @@ void read(uint8_t i, uint8_t j){
 void track(uint8_t i, uint8_t j){
 
     uint8_t index = j*X_MAX + i;
-    uint8_t idx = grid_screen[index-2] == '.' ? 0 : DIGIFY(grid_screen[index-2]);
-    uint8_t len = grid_screen[index-1] == '.' ? 1 : DIGIFY(grid_screen[index-1]);
+    uint8_t idx = !ISB36(grid_screen[index-2]) ? 0 : DIGIFY(grid_screen[index-2]);
+    uint8_t len = !ISB36(grid_screen[index-1]) ? 1 : DIGIFY(grid_screen[index-1]);
     char val = grid_screen[index+1+(idx % len)];
 
     grid_screen[(j+1)*X_MAX + i] = val;
@@ -392,8 +405,8 @@ void push(uint8_t i, uint8_t j){
 
     uint8_t index = j*X_MAX + i;
     uint8_t result = (j+1)*X_MAX + i;
-    uint8_t key = grid_screen[index-2] == '.' ? 0 : DIGIFY(grid_screen[index-2]);
-    uint8_t len = grid_screen[index-1] == '.' ? 1 : DIGIFY(grid_screen[index-1]);
+    uint8_t key = !ISB36(grid_screen[index-2]) ? 0 : DIGIFY(grid_screen[index-2]);
+    uint8_t len = !ISB36(grid_screen[index-1]) ? 1 : DIGIFY(grid_screen[index-1]);
     char val = grid_screen[index+1];
     uint8_t id = key % len;
 
@@ -411,9 +424,9 @@ void query(uint8_t i, uint8_t j){
 
     uint8_t index = j*X_MAX + i;
     uint8_t result = (j+1)*X_MAX + i;
-    uint8_t x_off = grid_screen[index-3] == '.' ? 0 : DIGIFY(grid_screen[index-3]);
-    uint8_t y_off = grid_screen[index-2] == '.' ? 0 : DIGIFY(grid_screen[index-2]);
-    uint8_t len = grid_screen[index-1] == '.' ? 1 : DIGIFY(grid_screen[index-1]);
+    uint8_t x_off = ISB36(grid_screen[index-3]) ? 0 : DIGIFY(grid_screen[index-3]);
+    uint8_t y_off = ISB36(grid_screen[index-2]) ? 0 : DIGIFY(grid_screen[index-2]);
+    uint8_t len = ISB36(grid_screen[index-1]) ? 1 : DIGIFY(grid_screen[index-1]);
 
     for(size_t it = 0; it < len; it++){
         grid_screen[result-(len-it-1)] = grid_screen[(j+y_off)*X_MAX+(i+x_off+it+1)];
@@ -439,8 +452,8 @@ void write(uint8_t i, uint8_t j){
    
 
     // update screen with result & colors
-    uint8_t x_off = grid_screen[off_x] == '.' ? 0 :DIGIFY(grid_screen[off_x]);
-    uint8_t y_off = grid_screen[off_y] == '.' ? 0 :DIGIFY(grid_screen[off_y]);
+    uint8_t x_off = ISB36(grid_screen[off_x]) ? 0 :DIGIFY(grid_screen[off_x]);
+    uint8_t y_off = ISB36(grid_screen[off_y]) ? 0 :DIGIFY(grid_screen[off_y]);
     uint8_t result = (j+1+y_off)*X_MAX+i+x_off; // y_offset
     grid_screen[result] = value;
     
@@ -461,9 +474,9 @@ void generator(uint8_t i, uint8_t j){
     uint8_t off_y = j*X_MAX + i-2; // y_offset
     uint8_t ldx = j*X_MAX + i-1; // len
 
-    uint8_t length = grid_screen[ldx] == '.' ? 1 : DIGIFY(grid_screen[ldx]);
-    uint8_t x_off = grid_screen[off_x] == '.' ? 0 :DIGIFY(grid_screen[off_x]);
-    uint8_t y_off = grid_screen[off_y] == '.' ? 0 :DIGIFY(grid_screen[off_y]);
+    uint8_t length = !ISB36(grid_screen[ldx]) ?  1 : DIGIFY(grid_screen[ldx]);
+    uint8_t x_off = !ISB36(grid_screen[off_x]) ? 0 :DIGIFY(grid_screen[off_x]);
+    uint8_t y_off = !ISB36(grid_screen[off_y]) ? 0 :DIGIFY(grid_screen[off_y]);
     uint8_t base_idx = (j+1+y_off)*X_MAX+i+x_off;
     
     grid_color[index] = 1; 
@@ -477,6 +490,30 @@ void generator(uint8_t i, uint8_t j){
 
 /***** All things SPECIAL defined here ************************(******/
 
+/// @brief hits all directions like a firework
+/// @param i 
+/// @param j 
+void starburst(uint8_t i, uint8_t j){
+    uint8_t index = j*X_MAX + i;
+
+    // set correct instructions
+    grid_screen[index] = '*';
+    grid_screen[index+1] = RIGHT;
+    grid_screen[index-1] = LEFT;
+    grid_screen[(j-1)*X_MAX + i] = UP;
+    grid_screen[(j+1)*X_MAX + i] = DOWN;
+
+    // set correct colors
+    grid_color[index+1] = 5;
+    grid_color[index-1] = 3;
+    grid_color[(j-1)*X_MAX + i] = 2;
+    grid_color[(j+1)*X_MAX + i] = 1;
+
+    // set correct bangers
+    bangers[index] = 1;
+    bangers[index+1] = 1;
+    bangers[(j+1)*X_MAX +i] = 1;
+}
 // void self(char cmd){
 
 // }
