@@ -533,16 +533,26 @@ void starburst(uint8_t i, uint8_t j){
 
     // set correct instructions
     grid_screen[index] = BANG;
-    grid_screen[index+1] = RIGHT;
-    grid_screen[index-1] = LEFT;
-    grid_screen[(j-1)*X_MAX + i] = UP;
-    grid_screen[(j+1)*X_MAX + i] = DOWN;
 
-    // set correct colors
-    grid_color[index+1] = 5;
-    grid_color[index-1] = 4;
-    grid_color[(j-1)*X_MAX + i] = 3;
-    grid_color[(j+1)*X_MAX + i] = 2;
+    if(i+1 < X_MAX && grid_screen[index+1] == '.'){
+        grid_screen[index+1] = RIGHT;
+        grid_color[index+1] = 5;
+    }
+    
+    if(i-1 >= 0 && grid_screen[index-1] == '.'){
+        grid_screen[index-1] = LEFT;
+        grid_color[index-1] = 4;
+    }
+    
+    if(j-1 >= 0 && grid_screen[(j-1)*X_MAX + i] == '.'){
+        grid_screen[(j-1)*X_MAX + i] = UP;
+        grid_color[(j-1)*X_MAX + i] = 3;
+    }
+
+    if(j+1 < Y_MAX && grid_screen[(j+1)*X_MAX + i] == '.'){
+        grid_screen[(j+1)*X_MAX + i] = DOWN;
+        grid_color[(j+1)*X_MAX + i] = 2;
+    }
 
     // set correct bangers
     bangers[index] = 1;
