@@ -15,10 +15,11 @@
 
 extern uint8_t cycle;
 extern char variables[36];
-extern uint8_t led_bangers[4];
 extern char grid_screen[Y_MAX * X_MAX];
 extern uint8_t bangers[Y_MAX * X_MAX];
 extern uint8_t grid_color[Y_MAX * X_MAX];
+
+extern void clear_LED();
 
 /*********************************************************************/
 
@@ -42,8 +43,11 @@ void update_frame(){
             else if(bangers[index] == 1){
                 bangers[index] = 0;
             }
-            else if (bangers[index] == 0 && grid_screen[index] == BANG){
-                bang(index);
+            else if (bangers[index] == 4){
+                bangers[index] = 3;
+            }
+            else if ((bangers[index] == 0 || bangers[index] == 3) && grid_screen[index] == BANG){
+                bang(index, bangers[index]);
             }
             else if (bangers[index] == 2){
                 bangers[index] = 2;
@@ -60,7 +64,7 @@ void update_frame(){
                         multiply(i, j);
                         break;
                     case BANG:
-                        bang(index);
+                        bang(index, 0);
                     case RIGHT:
                         east(i, j);
                         break;
@@ -132,32 +136,5 @@ void update_frame(){
                 }
             }
         }   
-    }
-    if(led_bangers[0] = 1){
-        led_bangers[0] = 0;
-    }
-    else{
-        digitalWrite(RED_LED, HIGH);
-    }
-
-    if(led_bangers[1] = 1){
-        led_bangers[1] = 0;
-    }
-    else{
-        digitalWrite(BLUE_LED, HIGH);
-    }
-
-    if(led_bangers[2] = 1){
-        led_bangers[2] = 0;
-    }
-    else{
-        digitalWrite(GREEN_LED, HIGH);
-    }
-
-    if(led_bangers[3] = 1){
-        led_bangers[3] = 0;
-    }
-    else{
-        digitalWrite(YELLOW_LED, HIGH);
     }
 }

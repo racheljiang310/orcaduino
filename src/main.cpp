@@ -11,35 +11,16 @@
 
 /***** All things CONTROLS *********************************/
 
-/***********************************************************
-
-  | LED |  | LED | LED | LED | LED | LED | LED | LED | LED | LED |   | LED |
-  | LED |   _______________________________________________________  | LED |
-  | LED |  |                                                       | | LED |
-  | LED |  |                                                       | | LED | 
-  | LED |  |                                                       | | LED |
-  | LED |  |                                                       | | LED |
-  | LED |  |                                                       | | LED | 
-  | LED |  |                                                       | | LED |
-  | LED |  |                                                       | | LED |
-  | LED |  | _____________________________________________________ | | LED | 
-  | LED |  | LED | LED | LED | LED | LED | LED | LED | LED | LED |   | LED | 
-
-************************************************************/
-
 int x, y; // col, row
 uint8_t cycle = 0; // 8 average
 uint64_t last_step = 0; // previous step
 const uint64_t step_delay = 50; // tweak as needed
 
-/* colors: 0: nothing | 1: operation | 2: operands | 
-           3: result  | 4: cursor    | 5: comments | 
+/* colors: 0: white   | 1: operation | 2: operands | 
+           3: result  | 4: extra_1   | 5: extra_2  | 
 */
 uint8_t grid_color[Y_MAX * X_MAX];
 uint8_t bangers[Y_MAX * X_MAX];  // controls bang timing
-
-/* colors: 0: RED | 1: BLUE | 2: GREEN | 3: YELLOW | */
-uint8_t led_bangers[4];
 
 /***** All things CONTANTS *********************************/
 char variables[36];  // stores vars
@@ -56,6 +37,26 @@ bool check_bounds(int r, int c);
 bool check_instruction(char instruction);
 /***** All things FUNC DEFN ********************************/
 
+/// @brief sets LED HIGH/LOW
+/// @param index 
+/// @param on (1 => HIGH, 0 => LOW)
+void set_LED(int index, bool on) {
+  if(on){
+    digitalWrite(index, HIGH);
+  }
+  else{
+    digitalWrite(index, LOW);
+  }
+  
+}
+
+void clear_LED() {
+  digitalWrite(RED_LED, LOW);
+  digitalWrite(BLUE_LED, LOW);
+  digitalWrite(YELLOW_LED, LOW);
+  digitalWrite(GREEN_LED, LOW);
+}
+
 /// @brief setup
 void setup() {
   Serial.begin(9600);
@@ -66,10 +67,11 @@ void setup() {
   // clear button
   pinMode(BUTTON1, INPUT_PULLUP); // pullup 
 
-  pinMode(RED_LED, OUTPUT); // north led
-  pinMode(GREEN_LED, OUTPUT); // south led
-  pinMode(BLUE_LED, OUTPUT); // east led
-  pinMode(YELLOW_LED, OUTPUT); // west led
+  pinMode(RED_LED, OUTPUT); 
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(BLUE_LED, OUTPUT); 
+  pinMode(YELLOW_LED, OUTPUT); 
+  pinMode(BANG_LED, OUTPUT);
 
   x = X_INIT; 
   y = Y_INIT; 
@@ -133,6 +135,7 @@ void loop() {
   if ((millis() - last_step) > step_delay) {
     update_frame();
     draw_grid();
+
     last_step = millis();
   }
   cycle = (cycle + 1) % 8;
@@ -154,23 +157,29 @@ void draw_grid() {
       if(x == i && y == j){ // cursor color
         tft.setTextColor(ST77XX_BLACK, ST77XX_WHITE);
       }
-      else if (color == 1){
-        tft.setTextColor(ST77XX_CYAN, ST77XX_BLACK);
-      }
-      else if (color == 2){
-        tft.setTextColor(ST77XX_ORANGE, ST77XX_BLACK);
-      }
-      else if (color == 3){
-        tft.setTextColor(ST77XX_GREEN, ST77XX_BLACK);
-      }
-      else {
+      else if (color == 0){ // nop
         tft.setTextColor(ST77XX_WHITE, ST77XX_BLACK);
       }
+      else if (color == 1){ // instruction opcode
+        tft.setTextColor(ST77XX_CYAN, ST77XX_BLACK);
+      }
+      else if (color == 2){ // operands of opcode
+        tft.setTextColor(ST77XX_BLUE, ST77XX_BLACK);
+      }
+      else if (color == 3){ // operation destination
+        tft.setTextColor(ST77XX_YELLOW, ST77XX_BLACK);
+      }
+      else if (color == 4){ // extra color 1 = 4
+        tft.setTextColor(ST77XX_GREEN, ST77XX_BLACK);
+      }
+      else { // extra color 2 = 5
+        tft.setTextColor(ST77XX_RED, ST77XX_BLACK);
+      }
 
-      int16_t x0 = i * cellW;
-      int16_t y0 = j * cellH;
+      int16_t x0 = i * cellW; // maybe offset by 1
+      int16_t y0 = j * cellH; // maybe offset by 1
 
-      tft.setCursor(x0, y0);
+      tft.setCursor(x0+7, y0+2);
       tft.print(val);
     }
   }
@@ -182,7 +191,7 @@ void setup_display(){
   tft.initR(INITR_BLACKTAB);
   tft.setRotation(3);
   tft.setTextSize(1);
-  tft.setCursor(0, 0);
+  tft.setCursor(5, 5);
   tft.fillScreen(ST77XX_BLACK);
   tft.setTextColor(ST77XX_GREEN);
 

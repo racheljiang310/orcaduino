@@ -16,7 +16,7 @@
 #define TFT_WIDE      160U
 #define TFT_HIGH      128U
 
-#define X_MAX          8
+#define X_MAX          9
 #define Y_MAX          8
 #define LCD_RESET     -1
 
@@ -32,10 +32,11 @@
 #define TFT_DC     9
 #define TFT_RST    8
 #define BUTTON1    2
-#define RED_LED    3 // NORTH
-#define BLUE_LED   4 // EAST
-#define GREEN_LED  5 // SOUTH
-#define YELLOW_LED 6 // WEST
+#define RED_LED    6 // NORTH
+#define GREEN_LED  4 // WEST
+#define BLUE_LED   5 // SOUTH
+#define YELLOW_LED 3 // EAST
+#define BANG_LED   7 // STAR
 
 /***** System Commands **********************************************/
 
@@ -51,31 +52,31 @@
 // Arithmetic Operations
 #define ADD        'A'
 #define SUB        'B'
-#define IF         'F'
 #define CLOCK      'C'
 #define DELAY      'D' 
 #define RIGHT      'E'
+#define IF         'F'
 #define GENER      'G' 
 #define HALT       'H' 
 #define INC        'I' 
+#define JYMP       'J'
 #define KONCAT     'K' 
 #define MIN        'L'
 #define MULT       'M'
 #define UP         'N'
 #define READ       'O'
 #define PUSH       'P' 
+#define QUERY      'Q' 
 #define RAND       'R' 
 #define DOWN       'S'
 #define TRACK      'T' 
+#define FIREWORK   'U'
 #define VAR        'V' 
 #define LEFT       'W' 
+#define WRITE      'X'
+#define JXMP       'Y' 
 #define LERP       'Z' 
 #define BANG       '*' 
 #define COMMENT    '#' 
-#define JYMP       'J' 
-#define JXMP       'Y' 
-#define WRITE      'X' 
-#define QUERY      'Q' 
-#define FIREWORK   'U' 
 
 #endif
